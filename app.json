@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "Linka",
+    "slug": "pupen-linka",
+    "version": "1.2.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#15803d"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "org.pupen.linka",
+      "buildNumber": "3",
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": ["tel"],
+        "NSContactsUsageDescription": "Povolení přístupu ke kontaktům slouží k uložení kontaktu do telefonního seznamu, pokud si to uživatel přání."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#15803d"
+      },
+      "package": "org.pupen.linka",
+      "versionCode": 3,
+      "permissions": [
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.READ_CONTACTS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "name": "Linka od Pupenu",
+      "shortName": "Linka",
+      "description": "Rychlé vyhledávání a vytáčení interních telefonních linek. Projekt Studentského spolku Pupen, z.s."
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    },
+    "scheme": "pupen-linka"
+  }
+}
