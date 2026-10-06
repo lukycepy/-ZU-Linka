@@ -19,7 +19,9 @@
       "bundleIdentifier": "org.pupen.linka",
       "buildNumber": "3",
       "infoPlist": {
-        "LSApplicationQueriesSchemes": ["tel"],
+        "LSApplicationQueriesSchemes": [
+          "tel"
+        ],
         "NSContactsUsageDescription": "Povolení přístupu ke kontaktům slouží k uložení kontaktu do telefonního seznamu, pokud si to uživatel přání."
       }
     },
@@ -43,9 +45,10 @@
     },
     "extra": {
       "eas": {
-        "projectId": ""
+        "projectId": "11e5c78e-36e2-4f55-b1ab-922ab43c676e"
       }
     },
-    "scheme": "pupen-linka"
+    "scheme": "pupen-linka",
+    "owner": "lukycepy"
   }
 }
