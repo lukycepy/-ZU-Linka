@@ -30,18 +30,21 @@ const nactiZavislosti = () => {
 };
 
 /**
- * Vrátí kompletní telefonní číslo z kontaktu (pokud je jen klapka, doplní prefix)
+ * Vrátí kompletní telefonní číslo z kontaktu:
+ * - pokud má kontakt vlastní telefon, použije se
+ * - jinak se číslo složí z linky (prefix + 4 čísla)
  */
 const ziskejTelefon = (kontakt) => {
   const { TELEFONNI_PREFIX } = require("../data/defaultContacts");
   if (!kontakt) return "";
   // Pokud uživatel má uložené celé číslo – použijeme ho
+  if (kontakt.telefon && String(kontakt.telefon).length > 6) return String(kontakt.telefon);
   if (kontakt.cislo && kontakt.cislo.length > 6) return kontakt.cislo;
-  // Jinak z klapky
-  if (kontakt.klapka && /^\d{4}$/.test(kontakt.klapka)) {
-    return `${TELEFONNI_PREFIX}${kontakt.klapka}`;
+  // Jinak z linky
+  if (kontakt.linka && /^\d{4}$/.test(kontakt.linka)) {
+    return `${TELEFONNI_PREFIX}${kontakt.linka}`;
   }
-  return kontakt.klapka || "";
+  return kontakt.linka || "";
 };
 
 /**
@@ -61,7 +64,7 @@ export const sestavTextKontaktu = (kontakt) => {
     const mistnost = kontakt.mistnost ? ` · ${kontakt.mistnost}` : "";
     radky.push(`📍 ${kontakt.budova}${mistnost}`);
   }
-  if (kontakt.klapka) radky.push(`☎️ Linka: ${kontakt.klapka}`);
+  if (kontakt.linka) radky.push(`☎️ Linka: ${kontakt.linka}`);
   if (telefon) radky.push(`📞 ${telefon}`);
   if (kontakt.email) radky.push(`✉️ ${kontakt.email}`);
   radky.push("");
@@ -103,7 +106,7 @@ export const sestavVCard = (kontakt) => {
     const org = [kontakt.fakulta, kontakt.oddeleni].filter(Boolean).join(";");
     radky.push(`ORG:${org}`);
   }
-  if (kontakt.klapka) radky.push(`TITLE:Linka: ${kontakt.klapka}`);
+  if (kontakt.linka) radky.push(`TITLE:Linka: ${kontakt.linka}`);
   if (telefon) radky.push(`TEL;TYPE=WORK,VOICE:${telefon}`);
   if (kontakt.email) radky.push(`EMAIL;TYPE=WORK,INTERNET:${kontakt.email}`);
   if (kontakt.budova || kontakt.mistnost) {
@@ -217,7 +220,7 @@ export const ulozitDoTelefonu = async (kontakt) => {
       [ExContacts.Fields.LastName]: kontakt.jmeno || "Neznámý",
       [ExContacts.Fields.Name]: kontakt.jmeno || "Neznámý",
       [ExContacts.Fields.Company]: company,
-      [ExContacts.Fields.JobTitle]: kontakt.klapka ? `Linka: ${kontakt.klapka}` : "",
+      [ExContacts.Fields.JobTitle]: kontakt.linka ? `Linka: ${kontakt.linka}` : "",
       [ExContacts.Fields.PhoneNumbers]: telefon ? [
         {
           number: telefon,
@@ -244,7 +247,7 @@ export const ulozitDoTelefonu = async (kontakt) => {
           addressType: ExContacts.AddressTypes.WORK
         }
       ] : [],
-      [ExContacts.Fields.Note]: `Aplikace Linka od Pupenu · ${kontakt.klapka ? "linka " + kontakt.klapka : ""}`
+      [ExContacts.Fields.Note]: `Aplikace Linka od Pupenu · ${kontakt.linka ? "linka " + kontakt.linka : ""}`
     };
 
     // 3. Uložit

@@ -3,24 +3,45 @@ import * as Linking from "expo-linking";
 import { Platform, Alert } from "react-native";
 
 /**
- * Vytvoří kompletní telefonní číslo z 4místné klapky
- * @param {string} klapka - 4místná klapka
+ * Vytvoří kompletní telefonní číslo z 4místné linky
+ * @param {string} linka - 4místná linka
  * @returns {string} Kompletní telefonní číslo s předvolbou
  */
-export const vytvorCisloZKlapky = (klapka) => {
+export const vytvorCisloZLinky = (linka) => {
   // Odebereme všechny nečíselné znaky
-  const cistaKlapka = klapka.replace(/\D/g, "");
-  return `${TELEFONNI_PREFIX}${cistaKlapka}`;
+  const cistaLinka = linka.replace(/\D/g, "");
+  return `${TELEFONNI_PREFIX}${cistaLinka}`;
 };
 
 /**
- * Ověří, zda je vstup platná 4místná klapka
+ * Ověří, zda je vstup platná 4místná linka
  * @param {string} vstup - Vstupní řetězec
- * @returns {boolean} Zda je vstup platná klapka
+ * @returns {boolean} Zda je vstup platná linka
  */
-export const jePlatnaKlapka = (vstup) => {
+export const jePlatnaLinka = (vstup) => {
+  if (!vstup) return false;
   const cistyVstup = vstup.replace(/\D/g, "");
   return /^\d{4}$/.test(cistyVstup);
+};
+
+/**
+ * Vrátí telefonní číslo z kontaktu:
+ * - pokud má kontakt vlastní telefon, vrátí ho
+ * - jinak vrátí číslo složené z linky (prefix + 4 čísla)
+ * @param {Object} kontakt
+ * @returns {string} Kompletní telefonní číslo
+ */
+export const ziskejTelefonKontaktu = (kontakt) => {
+  if (!kontakt) return "";
+  // preferujeme přímé telefonní číslo, pokud existuje
+  if (kontakt.telefon && String(kontakt.telefon).trim().length > 0) {
+    return String(kontakt.telefon).trim();
+  }
+  // jinak sestavíme číslo z linky
+  if (kontakt.linka && jePlatnaLinka(kontakt.linka)) {
+    return vytvorCisloZLinky(kontakt.linka);
+  }
+  return "";
 };
 
 /**
@@ -40,19 +61,19 @@ export const formatujCislo = (cislo) => {
 
 /**
  * Iniciuje telefonní hovor
- * @param {string} klapka - 4místná klapka nebo kompletní číslo
+ * @param {string} cil - 4místná linka nebo kompletní telefonní číslo
  * @returns {Promise<boolean>} Zda se podařilo otevřít telefonní aplikaci
  */
-export const zavolej = async (klapka) => {
+export const zavolej = async (cil) => {
   try {
     let telefonniCislo;
 
-    // Pokud je vstup 4místná klapka, vytvoříme z něj číslo
-    if (jePlatnaKlapka(klapka)) {
-      telefonniCislo = vytvorCisloZKlapky(klapka);
+    // Pokud je vstup 4místná linka, vytvoříme z ní číslo
+    if (jePlatnaLinka(cil)) {
+      telefonniCislo = vytvorCisloZLinky(cil);
     } else {
       // Jinak předpokládáme, že jde o kompletní číslo
-      telefonniCislo = klapka;
+      telefonniCislo = cil;
     }
 
     // Vytvoříme tel:// URL
@@ -92,7 +113,7 @@ export const zavolej = async (klapka) => {
 
 /**
  * Provede fulltextové vyhledávání v polích kontaktu
- * Hledá v: jméno, oddělení, fakulta, budova, místnost, klapka, email
+ * Hledá v: jméno, oddělení, fakulta, budova, místnost, linka, telefon, email
  * @param {Array} kontakty - Seznam kontaktů k prohledání
  * @param {string} vyhledavanyText - Text, který hledáme
  * @returns {Array} Filtrovaný seznam kontaktů
@@ -112,7 +133,8 @@ export const vyhledejKontakty = (kontakty, vyhledavanyText) => {
       kontakt.fakulta,
       kontakt.budova,
       kontakt.mistnost,
-      kontakt.klapka,
+      kontakt.linka,
+      kontakt.telefon,
       kontakt.email
     ]
       .filter(Boolean)

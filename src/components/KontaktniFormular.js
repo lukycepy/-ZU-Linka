@@ -48,7 +48,7 @@ const KontaktniFormular = ({
   const [novyJmeno, setNovyJmeno] = useState("");
   const [novyOddeleni, setNovyOddeleni] = useState("");
   const [novyFakulta, setNovyFakulta] = useState("");
-  const [novyKlapka, setNovyKlapka] = useState("");
+  const [novyLinka, setNovyLinka] = useState("");
   const [novyCislo, setNovyCislo] = useState("");
   const [novyEmail, setNovyEmail] = useState("");
   const [novyBudova, setNovyBudova] = useState("");
@@ -83,7 +83,7 @@ const KontaktniFormular = ({
       `Jméno a titul:     ${novyJmeno || "—"}`,
       `Oddělení:          ${novyOddeleni || "—"}`,
       `Fakulta / útvar:   ${novyFakulta || "—"}`,
-      `Linka (4 čísla):   ${novyKlapka || "—"}`,
+      `Linka (4 čísla):   ${novyLinka || "—"}`,
       `Telefonní číslo:   ${novyCislo || "—"}`,
       `E‑mail:            ${novyEmail || "—"}`,
       `Budova / místnost: ${novyBudova || "—"}`,
@@ -96,7 +96,7 @@ const KontaktniFormular = ({
   const odeslatDotaz = async () => {
     // Minimální délka textu záleží na typu
     const prazdnyNovy = jeNovy &&
-      !novyJmeno && !novyKlapka && !novyCislo && !novyEmail && !novyOddeleni;
+      !novyJmeno && !novyLinka && !novyCislo && !novyEmail && !novyOddeleni;
 
     if (textZpravy.trim().length < 5 && !(jeNovy && !prazdnyNovy)) {
       Alert.alert(
@@ -138,7 +138,7 @@ const KontaktniFormular = ({
               jmeno: novyJmeno,
               oddeleni: novyOddeleni,
               fakulta: novyFakulta,
-              klapka: novyKlapka,
+              linka: novyLinka,
               cislo: novyCislo,
               email: novyEmail,
               budova: novyBudova,
@@ -191,7 +191,7 @@ const KontaktniFormular = ({
           setNovyJmeno("");
           setNovyOddeleni("");
           setNovyFakulta("");
-          setNovyKlapka("");
+          setNovyLinka("");
           setNovyCislo("");
           setNovyEmail("");
           setNovyBudova("");
@@ -413,8 +413,8 @@ const KontaktniFormular = ({
                 style={[styly.textInput, textInputStyle]}
                 placeholder="např. 1234"
                 placeholderTextColor={barvy.textPotrebny}
-                value={novyKlapka}
-                onChangeText={setNovyKlapka}
+                value={novyLinka}
+                onChangeText={setNovyLinka}
                 keyboardType="number-pad"
                 maxLength={4}
               />
@@ -522,7 +522,7 @@ const KontaktniFormular = ({
           styly.odeslatTlacitko,
           { backgroundColor: odesilaSe
             ? barvy.textPotrebny
-            : (textZpravy.trim().length < 3 && !(jeNovy && (novyJmeno || novyKlapka)))
+            : (textZpravy.trim().length < 3 && !(jeNovy && (novyJmeno || novyLinka)))
               ? barvy.textPotrebny
               : barvy.akcent }
         ]}

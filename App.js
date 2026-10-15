@@ -597,10 +597,10 @@ export default function App() {
                 <View style={styly.navodKontejner}>
                   {[
                     {
-                      1: "Do vytáčky zadejte 4místnou klapku – hovor se spustí automaticky."
+                      1: "Do vytáčky zadejte 4místnou linku – hovor se spustí automaticky."
                     },
                     {
-                      2: "V záložce Kontakty hledejte podle jména, oddělení, budovy nebo klapky. Použijte filtry pro řazení a výběr fakulty."
+                      2: "V záložce Kontakty hledejte podle jména, oddělení, budovy nebo linky. Použijte filtry pro řazení a výběr fakulty."
                     },
                     {
                       3: "V horním menu každého kontaktu rozbalíte akci Sdílet / Uložit do telefonu."

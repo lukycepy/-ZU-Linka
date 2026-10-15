@@ -11,59 +11,59 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   zavolej,
-  vytvorCisloZKlapky,
-  jePlatnaKlapka,
+  vytvorCisloZLinky,
+  jePlatnaLinka,
   formatujCislo
 } from "../services/contactsService";
 import { lehkyImpakt, silnyImpakt, uspech } from "../services/hapticService";
 
 /**
- * Komponenta pro rychlé vytáčení 4místné klapky
+ * Komponenta pro rychlé vytáčení 4místné linky
  * Podporuje téma (#7), velikost písma (#12) a haptiku (#8)
  */
 const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
   const m = velPisma;
-  const [klapka, setKlapka] = useState("");
+  const [linka, setLinka] = useState("");
   const [zobrazitCislo, setZobrazitCislo] = useState(false);
   const inputRef = useRef(null);
   const haptika = nastaveni.haptikaZapnuta;
 
   useEffect(() => {
-    if (jePlatnaKlapka(klapka) && klapka.length === 4) {
+    if (jePlatnaLinka(linka) && linka.length === 4) {
       const casovac = setTimeout(() => {
         provedHovor();
       }, 300);
       return () => clearTimeout(casovac);
     }
-  }, [klapka]);
+  }, [linka]);
 
   const pridejCislici = (cislo) => {
-    if (klapka.length < 4) {
+    if (linka.length < 4) {
       lehkyImpakt(haptika);
-      const novaKlapka = klapka + cislo;
-      setKlapka(novaKlapka);
+      const novaLinka = linka + cislo;
+      setLinka(novaLinka);
     }
   };
 
   const smazPosledni = () => {
     lehkyImpakt(haptika);
-    setKlapka((predchozi) => predchozi.slice(0, -1));
+    setLinka((predchozi) => predchozi.slice(0, -1));
   };
 
   const vymazVse = () => {
     lehkyImpakt(haptika);
-    setKlapka("");
+    setLinka("");
   };
 
   const provedHovor = async () => {
-    if (!jePlatnaKlapka(klapka)) {
+    if (!jePlatnaLinka(linka)) {
       Alert.alert("Neplatná linka", "Prosím zadejte platnou 4místnou linku.", [{ text: "OK" }]);
       return;
     }
     silnyImpakt(haptika);
     Keyboard.dismiss();
     try {
-      await zavolej(klapka);
+      await zavolej(linka);
       uspech(haptika);
     } catch (e) {
       Alert.alert(
@@ -74,7 +74,7 @@ const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
     }
   };
 
-  const ukazkoveCislo = klapka.length > 0 ? vytvorCisloZKlapky(klapka) : "";
+  const ukazkoveCislo = linka.length > 0 ? vytvorCisloZLinky(linka) : "";
 
   return (
     <View style={[styly.kontejner, { backgroundColor: barvy.pozadi }]}>
@@ -83,7 +83,7 @@ const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
           Rychlé vytáčení
         </Text>
         <Text style={[styly.podnadpis, { color: barvy.textVedlejsi, fontSize: 15 * m }]}>
-          Zadejte 4místnou klapku
+          Zadejte 4místnou linku
         </Text>
       </View>
 
@@ -93,9 +93,9 @@ const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
       ]}>
         <TextInput
           ref={inputRef}
-          style={[styly.klapkaText, { color: barvy.textAkcent, fontSize: 56 * m }]}
-          value={klapka}
-          onChangeText={setKlapka}
+          style={[styly.linkaText, { color: barvy.textAkcent, fontSize: 56 * m }]}
+          value={linka}
+          onChangeText={setLinka}
           keyboardType="numeric"
           maxLength={4}
           placeholder="• • • •"
@@ -109,7 +109,7 @@ const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
               style={[
                 styly.tecka,
                 { borderColor: barvy.textPotrebny },
-                klapka.length > index && {
+                linka.length > index && {
                   backgroundColor: barvy.akcent,
                   borderColor: barvy.akcent
                 }
@@ -210,15 +210,15 @@ const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
       <TouchableOpacity
         style={[
           styly.tlacitkoHovor,
-          { backgroundColor: jePlatnaKlapka(klapka) ? barvy.akcent : barvy.textPotrebny }
+          { backgroundColor: jePlatnaLinka(linka) ? barvy.akcent : barvy.textPotrebny }
         ]}
         onPress={provedHovor}
         activeOpacity={0.8}
-        disabled={!jePlatnaKlapka(klapka)}
+        disabled={!jePlatnaLinka(linka)}
       >
         <MaterialCommunityIcons name="phone" size={32 * m} color="#FFFFFF" />
         <Text style={[styly.tlacitkoHovorText, { fontSize: 18 * m }]}>
-          Zavolat na linku {klapka || "• • • •"}
+          Zavolat na linku {linka || "• • • •"}
         </Text>
       </TouchableOpacity>
     </View>
@@ -260,7 +260,7 @@ const styly = StyleSheet.create({
     alignItems: "center",
     marginBottom: 24
   },
-  klapkaText: {
+  linkaText: {
     fontWeight: "700",
     letterSpacing: 16,
     textAlign: "center",

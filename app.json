@@ -49,6 +49,9 @@
       }
     },
     "scheme": "pupen-linka",
-    "owner": "lukycepy"
+    "owner": "lukycepy",
+    "plugins": [
+      "expo-widgets"
+    ]
   }
 }

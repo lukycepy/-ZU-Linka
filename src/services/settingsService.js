@@ -16,7 +16,7 @@ export const VYCHOZI_NASTAVENI = {
   // #12 Velikost písma: 0 = malé (A−), 1 = normální (A), 2 = velké (A+), 3 = extrémně velké (A++)
   velikostPisma: 1,
 
-  // #9 Třídění kontaktů: "prijmeni" (A-Ž), "fakulta", "klapka", "oblibene" (Oblíbené jako první)
+  // #9 Třídění kontaktů: "prijmeni" (A-Ž), "fakulta", "linka", "oblibene" (Oblíbené jako první)
   razeniKontaktu: "prijmeni",
 
   // #10 Filtrování fakulty: null = Zobrazit vše, jinak string např. "Fakulta technická"
@@ -114,6 +114,6 @@ export const MOZNOSTI_VELIKOST_PISMA = [
 export const MOZNOSTI_RAZENI = [
   { id: "prijmeni", nazev: "Podle příjmení (A–Ž)", ikona: "sort-alphabetical-ascending" },
   { id: "fakulta", nazev: "Podle fakulty", ikona: "office-building-marker-outline" },
-  { id: "klapka", nazev: "Podle linky (0–9)", ikona: "numeric" },
+  { id: "linka", nazev: "Podle linky (0–9)", ikona: "numeric" },
   { id: "oblibene", nazev: "Oblíbené jako první", ikona: "star-outline" }
 ];

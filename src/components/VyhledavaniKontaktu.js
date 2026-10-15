@@ -15,7 +15,7 @@ import {
   vyhledejKontakty,
   zavolej,
   formatujCislo,
-  vytvorCisloZKlapky,
+  vytvorCisloZLinky,
   seskupKontaktyPodlePrijmeni
 } from "../services/contactsService";
 import { MOZNOSTI_RAZENI } from "../services/settingsService";
@@ -63,6 +63,14 @@ const VyhledavaniKontaktu = ({
   const filtrovaneKontakty = useMemo(() => {
     let vysledek = (kontakty || []).slice();
 
+    // 0. Filtr neplatných kontaktů – bez jména nebo bez možnosti volání (linka i telefon) nezobrazit
+    vysledek = vysledek.filter((k) => {
+      if (!k || !k.jmeno || !String(k.jmeno).trim()) return false;
+      const maLinku = k.linka && String(k.linka).trim().length > 0;
+      const maTelefon = k.telefon && String(k.telefon).trim().length > 0;
+      return maLinku || maTelefon;
+    });
+
     // 1. Filtr oblíbených
     if (zobrazitOblibene) {
       vysledek = vysledek.filter((k) => oblibene.includes(k.id));
@@ -91,10 +99,10 @@ const VyhledavaniKontaktu = ({
           return fa !== fb ? fa.localeCompare(fb, "cs") : porovnejPrijmeni(a, b);
         });
         break;
-      case "klapka":
+      case "linka":
         vysledek.sort((a, b) => {
-          const ka = parseInt(a.klapka || "0", 10);
-          const kb = parseInt(b.klapka || "0", 10);
+          const ka = parseInt(a.linka || "0", 10);
+          const kb = parseInt(b.linka || "0", 10);
           return ka - kb;
         });
         break;
@@ -125,7 +133,7 @@ const VyhledavaniKontaktu = ({
   const seskupeneKontakty = useMemo(() => {
     if (vyhledavani.trim()) return null;
     if (pouzitRadit === "oblibene" ||
-        pouzitRadit === "klapka" ||
+        pouzitRadit === "linka" ||
         pouzitRadit === "fakulta") {
       return null; // pro netradiční řazení zobrazíme rovnou seznam bez seskupení
     }
@@ -162,9 +170,9 @@ const VyhledavaniKontaktu = ({
     naPrepnutiOblibeneho(id);
   };
 
-  const handleZavolej = (klapka) => {
+  const handleZavolej = (cil) => {
     stredniImpakt(nastaveni.haptikaZapnuta);
-    zavolej(klapka);
+    zavolej(cil);
   };
 
   const vykresliKontakt = ({ item }) => {
@@ -175,7 +183,8 @@ const VyhledavaniKontaktu = ({
         kontakt={item}
         jeObliben={jeObliben}
         rozbalen={rozbalen}
-        naZavolani={() => handleZavolej(item.klapka)}
+        naZavolani={() => handleZavolej(item.linka)}
+        naZavolaniTelefon={(tel) => handleZavolej(tel)}
         naPrepnutiOblibeneho={() => handlePrepnutiOblibenehoW(item.id)}
         naRozbal={() => {
           lehkyImpakt(nastaveni.haptikaZapnuta);
@@ -442,7 +451,7 @@ const VyhledavaciLista = ({
       />
       <TextInput
         style={[styly.vyhledavaciPolicko, { color: barvy.textHlavni, fontSize: 15 * m }]}
-        placeholder="Hledat jméno, oddělení, klapku..."
+        placeholder="Hledat jméno, oddělení, linku..."
         placeholderTextColor={barvy.textPotrebny}
         value={vyhledavani}
         onChangeText={naZmenu}
@@ -509,6 +518,7 @@ const KontaktPolozka = ({
   jeObliben,
   rozbalen,
   naZavolani,
+  naZavolaniTelefon,
   naPrepnutiOblibeneho,
   naRozbal,
   naSdilet,
@@ -517,7 +527,11 @@ const KontaktPolozka = ({
   m
 }) => {
   const inicialy = ziskejInicialy(kontakt.jmeno);
-  const telefonniCislo = vytvorCisloZKlapky(kontakt.klapka);
+  // Linka (4místná) → kompletní telefonní číslo
+  const cisloZLinky = kontakt.linka ? vytvorCisloZLinky(kontakt.linka) : "";
+  // Má kontakt vlastní telefonní číslo? (jiné než linka)
+  const maTelefon = !!(kontakt.telefon && String(kontakt.telefon).trim().length > 0);
+  const telefonCislo = maTelefon ? String(kontakt.telefon).trim() : "";
 
   return (
     <View style={[
@@ -553,16 +567,30 @@ const KontaktPolozka = ({
                 {" "}{kontakt.budova}{kontakt.mistnost ? " · " + kontakt.mistnost : ""}
               </Text>
             ) : null}
-            <View style={[styly.kontaktKlapkaBadge, { backgroundColor: barvy.akcentSvetla }]}>
-              <MaterialCommunityIcons
-                name="phone-classic"
-                size={12}
-                color={barvy.akcent}
-              />
-              <Text style={[styly.kontaktKlapkaText, { color: barvy.textAkcent, fontSize: 12 * m }]}>
-                {kontakt.klapka}
-              </Text>
-            </View>
+            {kontakt.linka ? (
+              <View style={[styly.kontaktLinkaBadge, { backgroundColor: barvy.akcentSvetla }]}>
+                <MaterialCommunityIcons
+                  name="phone-classic"
+                  size={12}
+                  color={barvy.akcent}
+                />
+                <Text style={[styly.kontaktLinkaText, { color: barvy.textAkcent, fontSize: 12 * m }]}>
+                  {kontakt.linka}
+                </Text>
+              </View>
+            ) : null}
+            {maTelefon ? (
+              <View style={[styly.kontaktLinkaBadge, { backgroundColor: barvy.akcentSvetla }]}>
+                <MaterialCommunityIcons
+                  name="cellphone"
+                  size={12}
+                  color={barvy.akcent}
+                />
+                <Text style={[styly.kontaktLinkaText, { color: barvy.textAkcent, fontSize: 12 * m }]}>
+                  {formatujCislo(telefonCislo)}
+                </Text>
+              </View>
+            ) : null}
           </View>
         </View>
       </TouchableOpacity>
@@ -636,9 +664,21 @@ const KontaktPolozka = ({
           >
             <MaterialCommunityIcons name="phone" size={18} color={barvy.textAkcent} />
             <Text style={[styly.akceTlacitkoText, { color: barvy.textAkcent, fontSize: 14 * m }]}>
-              Zavolat {formatujCislo(telefonniCislo)}
+              {kontakt.linka ? `Zavolat na linku ${kontakt.linka}` : "Zavolat"}
             </Text>
           </TouchableOpacity>
+          {maTelefon && (
+            <TouchableOpacity
+              style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni }]}
+              onPress={() => naZavolaniTelefon(telefonCislo)}
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons name="cellphone" size={18} color={barvy.textAkcent} />
+              <Text style={[styly.akceTlacitkoText, { color: barvy.textAkcent, fontSize: 14 * m }]}>
+                Zavolat na telefon {formatujCislo(telefonCislo)}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </View>
@@ -763,7 +803,7 @@ const styly = StyleSheet.create({
   kontaktDetail: {
     flexShrink: 1
   },
-  kontaktKlapkaBadge: {
+  kontaktLinkaBadge: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 8,
@@ -771,7 +811,7 @@ const styly = StyleSheet.create({
     borderRadius: 6,
     gap: 4
   },
-  kontaktKlapkaText: {
+  kontaktLinkaText: {
     fontWeight: "600"
   },
   kontaktAkce: {

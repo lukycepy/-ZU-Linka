@@ -4,28 +4,27 @@
  *  – BEZ použití mailového klienta (mailto:)
  * =============================================================
  *
- *  Implementace používá službu FORMSUBMIT.CO (dostupná zdarma
- *  pro nekomerční použití):
- *    POST https://formsubmit.co/ajax/{{ EMAIL PRÍJMCE }}
+ *  Aplikace pošle data pomocí HTTPS POST na serverový skript
+ *  na pupen.org:
+ *    POST https://www.pupen.org/apps/odesli-mail.php
  *
- *  Při prvním úspěšném requestu FormSubmit pošle na adresu
- *  tech@pupen.org aktivační odkaz. Jakmile ho Lukáš v mailu
- *  1× potvrdí, následující formuláře chodí napřímo bez akce.
+ *  Ten (PHP skript odesli-mail.php v rootu projektu) přepošle
+ *  e-mail přes SMTP z adresy apps@pupen.org na tech@pupen.org.
  *
- *  Pokud HTTP požadavek selže (CORS, offline, chyba serveru)
- *  – automaticky se použije FALLBACK na původní mailto: odkaz,
+ *  Pokud HTTP požadavek selže (offline, chyba serveru) –
+ *  automaticky se použije FALLBACK na původní mailto: odkaz,
  *  aby uživatel vůbec nic nepřišel o svůj dotaz.
  */
 
 /** Kam se mají všechny formuláře doručit */
 const EMAIL_PRIIMCE = "tech@pupen.org";
-/** Kdo odesílá (zobrazí se jako From ve FormSubmit) */
-const EMAIL_ODESILATELE = "app@pupen.org";
-/** Endpoint – FormSubmit JSON (AJAX varianta, ne přesměruje stránku) */
-const FORMSUBMIT_ENDPOINT = `https://formsubmit.co/ajax/${EMAIL_PRIIMCE}`;
+/** Kdo odesílá (zobrazí se jako From) */
+const EMAIL_ODESILATELE = "apps@pupen.org";
+/** Serverový endpoint, který e-mail přepošle přes SMTP */
+const MAIL_ENDPOINT = "https://www.pupen.org/apps/odesli-mail.php";
 
 /**
- * Sestaví HTTP payload pro FormSubmit z formulářových dat.
+ * Sestaví HTTP payload pro serverový odesílací skript.
  * Zachová všechny pole, včetně 8 polí Návrhu nového kontaktu (#23).
  *
  * @param {object} data
@@ -58,7 +57,7 @@ export const sestavHTTPayload = (data) => {
     bodyRadky.push(`Jméno a tituly:  ${novyKontakt.jmeno || "—"}`);
     bodyRadky.push(`Oddělení:       ${novyKontakt.oddeleni || "—"}`);
     bodyRadky.push(`Fakulta:         ${novyKontakt.fakulta || "—"}`);
-    bodyRadky.push(`Linka (4 čísla): ${novyKontakt.klapka || "—"}`);
+    bodyRadky.push(`Linka (4 čísla): ${novyKontakt.linka || "—"}`);
     bodyRadky.push(`Telefon:         ${novyKontakt.cislo || "—"}`);
     bodyRadky.push(`E-mail:          ${novyKontakt.email || "—"}`);
     bodyRadky.push(`Budova/místnost: ${novyKontakt.budova || "—"}`);
@@ -86,35 +85,23 @@ export const sestavHTTPayload = (data) => {
 
   const message = bodyRadky.join("\n");
 
-  // FormSubmit očekává: _subject (předmět), _replyTo (odpovědět na), _cc, _template a vlastní libovolná pole
+  // Serverový PHP skript očekává JSON s těmito klíči:
+  //   from, to, subject, message, replyTo
   return {
-    _subject: subject,
-    _replyto: email || "",
-    _cc: email ? email : undefined,      // uživateli pošleme kopii (pokud zadal email)
-    _template: "table",                   // přehledné HTML formátování
-    _sender: EMAIL_ODESILATELE,           // From: app@pupen.org
-
-    // Lidsky čitelná pole (využijeme FormSubmit vlastní pole – zobrazí se
-    // jak ve formátu e-mailu, tak v administraci FormSubmit)
-    "📋 Typ dotazu": typZpravyNazev || "—",
-    "👤 Jméno": jmeno || "—",
-    "📧 E-mail": email || "—",
-    ...(novyKontakt
-      ? {
-          "✨ NÁVRH NOVÉHO KONTAKTU": "--------",
-          "  • Jméno a tituly": novyKontakt.jmeno || "—",
-          "  • Oddělení": novyKontakt.oddeleni || "—",
-          "  • Fakulta": novyKontakt.fakulta || "—",
-          "  • Linka (4 čísla)": novyKontakt.klapka || "—",
-          "  • Telefon": novyKontakt.cislo || "—",
-          "  • E-mail": novyKontakt.email || "—",
-          "  • Budova / místnost": novyKontakt.budova || "—",
-          "  • Zdroj (URL)": novyKontakt.zdroj || "—"
-        }
-      : {}),
-    "💬 Zpráva": textZpravy || "—",
-    "ℹ️ Text celkem (formátovaný)": message,
-    _message: message
+    from: EMAIL_ODESILATELE,
+    to: EMAIL_PRIIMCE,
+    subject,
+    message,
+    replyTo: email || "",
+    // Příloha: strukturovaná data pro případné zpracování na serveru
+    data: {
+      typZpravy: typZpravyNazev || "—",
+      jmeno: jmeno || "",
+      email: email || "",
+      textZpravy: textZpravy || "",
+      novyKontakt: novyKontakt || null,
+      zarizeniInfo: zarizeniInfo || null
+    }
   };
 };
 
@@ -149,7 +136,7 @@ export const sestavMailtoURL = (data) => {
     bodyRadky.push(`Jméno a tituly:  ${novyKontakt.jmeno || "—"}`);
     bodyRadky.push(`Oddělení:       ${novyKontakt.oddeleni || "—"}`);
     bodyRadky.push(`Fakulta:         ${novyKontakt.fakulta || "—"}`);
-    bodyRadky.push(`Linka (4 čísla): ${novyKontakt.klapka || "—"}`);
+    bodyRadky.push(`Linka (4 čísla): ${novyKontakt.linka || "—"}`);
     bodyRadky.push(`Telefon:         ${novyKontakt.cislo || "—"}`);
     bodyRadky.push(`E-mail:          ${novyKontakt.email || "—"}`);
     bodyRadky.push(`Budova/místnost: ${novyKontakt.budova || "—"}`);
@@ -168,7 +155,7 @@ export const sestavMailtoURL = (data) => {
 };
 
 /**
- * Pokusí se ODESLAT FORMULÁŘ PŘES HTTP (FormSubmit.co).
+ * Pokusí se ODESLAT FORMULÁŘ PŘES HTTP (serverový PHP skript na pupen.org).
  * Pokud to nejde, automaticky spustí FALLBACK (Linking.openURL
  * s mailto: odkazem, který otevře uživatelův mail klient).
  *
@@ -179,10 +166,10 @@ export const odeslatFormular = async (data, { otevreMailto = (url) => {} } = {})
   try {
     const payload = sestavHTTPayload(data);
 
-    // 1. Nejdříve zkusíme HTTP POST – pokud existuje síť a CORS je ok,
-    //    e-mail dorazí z adresy app@pupen.org na tech@pupen.org
+    // 1. Nejdříve zkusíme HTTP POST na serverový skript.
+    //    Ten přepošle e-mail přes SMTP z apps@pupen.org na tech@pupen.org
     //    BEZ jakéhokoliv mail klienta.
-    const odpoved = await fetch(FORMSUBMIT_ENDPOINT, {
+    const odpoved = await fetch(MAIL_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -194,21 +181,21 @@ export const odeslatFormular = async (data, { otevreMailto = (url) => {} } = {})
     let odpovedJSON = null;
     try { odpovedJSON = await odpoved.json(); } catch (_) {}
 
-    if (odpoved.ok && odpovedJSON?.success === "true") {
+    if (odpoved.ok && (odpovedJSON?.success === true || odpovedJSON?.ok === true)) {
       // Úspěch! 🎉 Dorazilo přímo na tech@pupen.org
       return { uspech: true, pouzito: "HTTP" };
     }
 
-    // FormSubmit vrátil ne-2xx (např. e-mail ještě není potvrzený, nebo
-    // rate-limit). Pokusíme se fallbacknout na mailto.
+    // Server vrátil ne-2xx nebo chybu. Pokusíme se fallbacknout na mailto.
     const zpravaChyby = odpovedJSON?.message
+      || odpovedJSON?.error
       || `HTTP ${odpoved.status} ${odpoved.statusText}`;
     throw new Error(zpravaChyby);
 
   } catch (chybaHTTP) {
     // 2. FALLBACK – otevřeme mail klienta uživatele.
     //    Uživatel tedy svoji zprávu vždy může odeslat, i když
-    //    síť / FormSubmit nefungují.
+    //    síť / server nefungují.
     try {
       const fallbackUrl = sestavMailtoURL(data);
       otevreMailto(fallbackUrl);
@@ -227,5 +214,5 @@ export default {
   sestavMailtoURL,
   EMAIL_PRIIMCE,
   EMAIL_ODESILATELE,
-  FORMSUBMIT_ENDPOINT
+  MAIL_ENDPOINT
 };

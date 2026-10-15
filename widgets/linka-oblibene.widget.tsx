@@ -52,10 +52,10 @@ export const WIDGET_CONFIG = {
  */
 export function Widget_Projekt_Linka_Oblibene({
   oblibene = [
-    { jmeno: "Přidej oblíbené", klapka: "0000" },
-    { jmeno: "v Nastavení", klapka: "0000" },
-    { jmeno: "aplikace", klapka: "0000" },
-    { jmeno: "Linka 📞", klapka: "0000" }
+    { jmeno: "Přidej oblíbené", linka: "0000" },
+    { jmeno: "v Nastavení", linka: "0000" },
+    { jmeno: "aplikace", linka: "0000" },
+    { jmeno: "Linka 📞", linka: "0000" }
   ],
   datumAktualizace = "—"
 }) {
@@ -65,10 +65,10 @@ export function Widget_Projekt_Linka_Oblibene({
 
   // Vyzvedneme 4 první
   const prvni4 = [
-    oblibene[0] || { jmeno: "—", klapka: "" },
-    oblibene[1] || { jmeno: "—", klapka: "" },
-    oblibene[2] || { jmeno: "—", klapka: "" },
-    oblibene[3] || { jmeno: "—", klapka: "" }
+    oblibene[0] || { jmeno: "—", linka: "" },
+    oblibene[1] || { jmeno: "—", linka: "" },
+    oblibene[2] || { jmeno: "—", linka: "" },
+    oblibene[3] || { jmeno: "—", linka: "" }
   ];
 
   // Barvy použijeme Pupen zelené (stálé – widget běží bez přístupu k AsyncStorage theme)
@@ -153,7 +153,7 @@ export function Widget_Projekt_Linka_Oblibene({
                   letterSpacing: 1.5
                 }}
               >
-                {osoba.klapka ? osoba.klapka : "—"}
+                {osoba.linka ? osoba.linka : "—"}
               </Text>
             </View>
           ))}
@@ -193,7 +193,7 @@ export function Widget_Projekt_Linka_Oblibene({
                   letterSpacing: 1.5
                 }}
               >
-                {osoba.klapka ? osoba.klapka : "—"}
+                {osoba.linka ? osoba.linka : "—"}
               </Text>
             </View>
           ))}
@@ -224,7 +224,7 @@ export const syncOblibeneWidget = async (oblibeneIds, kontakty) => {
       if (kontakt) {
         prvni4.push({
           jmeno: kontakt.jmeno,
-          klapka: kontakt.klapka,
+          linka: kontakt.linka,
           id: kontakt.id
         });
       }
