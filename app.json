@@ -34,7 +34,8 @@
       "versionCode": 3,
       "permissions": [
         "android.permission.WRITE_CONTACTS",
-        "android.permission.READ_CONTACTS"
+        "android.permission.READ_CONTACTS",
+        "android.permission.CALL_PHONE"
       ]
     },
     "web": {

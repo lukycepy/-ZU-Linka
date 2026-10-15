@@ -1,6 +1,14 @@
 import { TELEFONNI_PREFIX } from "../data/defaultContacts";
 import * as Linking from "expo-linking";
-import { Platform, Alert } from "react-native";
+import { Platform, Alert, PermissionsAndroid } from "react-native";
+
+// Lazy načtení expo-intent-launcher (pouze pro Android ACTION_CALL)
+let IntentLauncher = null;
+try {
+  IntentLauncher = require("expo-intent-launcher").default;
+} catch (e) {
+  IntentLauncher = null;
+}
 
 /**
  * Vytvoří kompletní telefonní číslo z 4místné linky
@@ -60,9 +68,17 @@ export const formatujCislo = (cislo) => {
 };
 
 /**
- * Iniciuje telefonní hovor
+ * Iniciuje telefonní hovor.
+ *
+ * Android: Pokusí se použít Intent.ACTION_CALL, který hovor vytočí
+ *   okamžitě (bez potvrzovací obrazovky dialeru). Pokud selže
+ *   (nedostatečné oprávnění CALL_PHONE nebo chyba), automaticky
+ *   použije fallback na ACTION_DIAL (tel: URL – otevře dialer).
+ * iOS: Otevře systémovou aplikaci Telefon přes tel: URL.
+ *   (iOS neumožňuje hovor přímo uvnitř aplikace.)
+ *
  * @param {string} cil - 4místná linka nebo kompletní telefonní číslo
- * @returns {Promise<boolean>} Zda se podařilo otevřít telefonní aplikaci
+ * @returns {Promise<boolean>} Zda se podařilo zahájit hovor
  */
 export const zavolej = async (cil) => {
   try {
@@ -76,19 +92,43 @@ export const zavolej = async (cil) => {
       telefonniCislo = cil;
     }
 
-    // Vytvoříme tel:// URL
     const telUrl = `tel:${telefonniCislo}`;
 
-    // Zkontrolujeme, zda URL můžeme otevřít
+    // === ANDROID: Pokus o ACTION_CALL (vytočení bez potvrzení) ===
+    if (Platform.OS === "android" && IntentLauncher) {
+      try {
+        // Nejprve požádáme o oprávnění CALL_PHONE (pokud ještě není uděleno)
+        const stavOpravneni = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CALL_PHONE,
+          {
+            title: "Povolení hovorů",
+            message: "Aplikace Linka potřebuje povolení k zahájení hovoru přímo z aplikace.",
+            buttonPositive: "Povolit",
+            buttonNegative: "Zamítnout"
+          }
+        );
+
+        if (stavOpravneni === PermissionsAndroid.RESULTS.GRANTED) {
+          await IntentLauncher.startActivityAsync("android.intent.action.CALL", {
+            data: telUrl
+          });
+          return true;
+        }
+        // Pokud oprávnění není uděleno, pokračujeme na fallback (tel: URL)
+      } catch (chybaActionCall) {
+        // Selhalo (např. SecurityException). Fallback na ACTION_DIAL.
+        console.warn("ACTION_CALL selhalo, používám ACTION_DIAL:", chybaActionCall.message);
+      }
+    }
+
+    // === iOS / Web / Fallback: Otevření přes tel: URL ===
     const muzemeOtevrit = await Linking.canOpenURL(telUrl);
 
     if (muzemeOtevrit) {
       await Linking.openURL(telUrl);
       return true;
     } else {
-      // Na webu nebo zařízeních bez možnosti volání
       if (Platform.OS === "web") {
-        // Pokusíme se otevřít i přesměrováním
         window.location.href = telUrl;
         return true;
       } else {
