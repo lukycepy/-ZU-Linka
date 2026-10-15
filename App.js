@@ -39,6 +39,13 @@ import {
   velikostPismaMult
 } from "./src/services/settingsService";
 import { lehkyImpakt, stredniImpakt, uspech, chyba } from "./src/services/hapticService";
+import {
+  zkontrolujAktualizaci,
+  jeVerzePreskocena,
+  nastavPreskocenouVerzi,
+  otevriStazeni,
+  ziskejAktualniVerzi
+} from "./src/services/updateService";
 // #16 Android / iOS widget – POUZE Nativní platformy (NE Web / PWA)
 let syncOblibeneWidget = async () => {};
 if (Platform.OS !== "web") {
@@ -120,6 +127,42 @@ export default function App() {
       return () => subscription?.remove?.();
     })();
   }, []);
+
+  // ===== Kontrola dostupných aktualizací aplikace (distribuce mimo obchody) =====
+  // Proběhne jednou po načtení aplikace. Pokud je na pupen.org novější APK
+  // a uživatel u této verze nezvolil „Později", zobrazí se upozornění.
+  useEffect(() => {
+    if (!nacteno) return;
+    (async () => {
+      try {
+        const vysl = await zkontrolujAktualizaci();
+        if (!vysl.uspech || !vysl.dostupna) return;
+
+        const cilovaVerze = vysl.nejnovejsi?.versionCode;
+        if (await jeVerzePreskocena(cilovaVerze)) return;
+
+        Alert.alert(
+          "Je dostupná nová verze",
+          `Je k dispozici novější verze aplikace Linka${
+            vysl.nejnovejsi?.verze ? ` (${vysl.nejnovejsi.verze})` : ""
+          }. Doporučujeme ji nainstalovat.`,
+          [
+            {
+              text: "Později",
+              style: "cancel",
+              onPress: () => nastavPreskocenouVerzi(cilovaVerze)
+            },
+            {
+              text: "Stáhnout",
+              onPress: () => otevriStazeni(vysl.nejnovejsi?.url)
+            }
+          ]
+        );
+      } catch (e) {
+        // Tichý fail – kontrola aktualizací nesmí narušit běh aplikace
+      }
+    })();
+  }, [nacteno]);
 
   const nactiData = useCallback(async () => {
     try {
@@ -276,6 +319,9 @@ export default function App() {
   const tma = nastaveni ? jeTma(nastaveni, systemTma ? "dark" : "light") : false;
   const barvy = ziskejTema(tma);
   const velPisma = nastaveni ? velikostPismaMult(nastaveni.velikostPisma ?? 1) : 1.0;
+
+  // Aktuální verze aplikace (z app.json) – pro zobrazení v informacích
+  const infoVerze = ziskejAktualniVerzi();
 
   // ===== Loading obrazovka (dokud nejsou načtena data) =====
   if (!nacteno || !nastaveni) {
@@ -500,7 +546,7 @@ export default function App() {
                   Linka
                 </Text>
                 <Text style={[styly.modalVerze, { color: barvy.textVedlejsi, fontSize: 14 * velPisma }]}>
-                  Verze 1.2.0
+                  Verze {infoVerze.verze}
                 </Text>
               </View>
 

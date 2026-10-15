@@ -50,6 +50,42 @@ define('SMTP_FROM_NAME', 'Linka od Pupenu');    // jméno odesílatele
 define('POVOLENI_PRIIMCI', ['tech@pupen.org', 'info@pupen.org']);
 define('VYCHOZI_PRIIMCE', 'tech@pupen.org');
 
+// ==== BEZPEČNOST: omezení počtu požadavků (anti-spam) ====
+// Tento endpoint je veřejný, proto omezujeme počet odeslání z jedné IP adresy.
+define('RATE_LIMIT_MAX', 5);      // maximální počet požadavků
+define('RATE_LIMIT_OKNO', 600);   // v časovém okně (sekundy); 600 s = 10 minut
+
+/**
+ * Jednoduchý file-based rate limiter podle IP adresy.
+ * Uchovává časová razítka posledních požadavků v dočasném souboru.
+ *
+ * @return bool true = požadavek povolen, false = překročen limit
+ */
+function rateLimitPovolen() {
+    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'neznama';
+    $soubor = sys_get_temp_dir() . '/linka-ratelimit-' . md5($ip) . '.json';
+    $nyni = time();
+
+    $zaznamy = [];
+    if (is_file($soubor)) {
+        $obsah = @file_get_contents($soubor);
+        $zaznamy = $obsah ? (json_decode($obsah, true) ?: []) : [];
+    }
+
+    // Ponecháme pouze záznamy spadající do aktuálního okna
+    $zaznamy = array_values(array_filter($zaznamy, function ($t) use ($nyni) {
+        return ($nyni - (int) $t) < RATE_LIMIT_OKNO;
+    }));
+
+    if (count($zaznamy) >= RATE_LIMIT_MAX) {
+        return false;
+    }
+
+    $zaznamy[] = $nyni;
+    @file_put_contents($soubor, json_encode($zaznamy), LOCK_EX);
+    return true;
+}
+
 // ==== HTTP hlavičky (CORS + JSON) ====
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -66,6 +102,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Pouze POST je povoleno.']);
+    exit;
+}
+
+// Anti-spam: omezení počtu požadavků z jedné IP adresy
+if (!rateLimitPovolen()) {
+    http_response_code(429);
+    echo json_encode(['success' => false, 'error' => 'Příliš mnoho požadavků. Zkuste to prosím později.']);
     exit;
 }
 

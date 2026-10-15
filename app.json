@@ -2,7 +2,7 @@
   "expo": {
     "name": "Linka",
     "slug": "pupen-linka",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.pupen.linka",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "tel"
@@ -31,7 +31,7 @@
         "backgroundColor": "#15803d"
       },
       "package": "org.pupen.linka",
-      "versionCode": 3,
+      "versionCode": 4,
       "permissions": [
         "android.permission.WRITE_CONTACTS",
         "android.permission.READ_CONTACTS",

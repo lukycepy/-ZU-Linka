@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,12 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { MOZNOSTI_VELIKOST_PISMA, MOZNOSTI_RAZENI } from "../services/settingsService";
+import {
+  zkontrolujAktualizaci,
+  ziskejAktualniVerzi,
+  otevriStazeni,
+  nastavPreskocenouVerzi
+} from "../services/updateService";
 
 /**
  * Komponenta Nastavení
@@ -269,7 +275,13 @@ const Nastaveni = ({
         </Text>
       </View>
 
-      {/* 6. SEKCE O APLIKACI */}
+      {/* 6. AKTUALIZACE APLIKACE (distribuce mimo obchody) */}
+      <Text style={[styles.skupinaNadpis, { color: barvy.textVedlejsi, fontSize: 13 * m, marginTop: 24 }]}>
+        AKTUALIZACE APLIKACE
+      </Text>
+      <KartaAktualizace barvy={barvy} m={m} />
+
+      {/* 7. SEKCE O APLIKACI */}
       <Text style={[styles.skupinaNadpis, { color: barvy.textVedlejsi, fontSize: 13 * m, marginTop: 24 }]}>
         O APLIKACI
       </Text>
@@ -329,9 +341,124 @@ const Nastaveni = ({
       </View>
 
       <Text style={[styles.vers, { color: barvy.textPotrebny, fontSize: 12 * m }]}>
-        Linka · verze 1.2 · © 2026 Studentský spolek Pupen, z.s.
+        Linka · verze {ziskejAktualniVerzi().verze} · © 2026 Studentský spolek Pupen, z.s.
       </Text>
     </ScrollView>
+  );
+};
+
+/**
+ * Karta s kontrolou dostupných aktualizací aplikace.
+ * Aplikace se distribuuje jako APK mimo obchody, proto si uživatel
+ * novou verzi stahuje ručně z pupen.org.
+ */
+const KartaAktualizace = ({ barvy, m }) => {
+  // stav: kontrola | aktualni | dostupna | chyba
+  const [stav, setStav] = useState("kontrola");
+  const [nejnovejsi, setNejnovejsi] = useState(null);
+  const [chybaText, setChybaText] = useState("");
+  const aktualniVerze = ziskejAktualniVerzi();
+
+  const zkontrolovat = async () => {
+    setStav("kontrola");
+    setChybaText("");
+    const vysl = await zkontrolujAktualizaci();
+    if (!vysl.uspech) {
+      setChybaText(vysl.duvod || "Kontrolu se nepodařilo provést.");
+      setStav("chyba");
+      return;
+    }
+    if (vysl.dostupna) {
+      setNejnovejsi(vysl.nejnovejsi);
+      setStav("dostupna");
+    } else {
+      setStav("aktualni");
+    }
+  };
+
+  // Kontrola při otevření Nastavení
+  useEffect(() => {
+    zkontrolovat();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const stahnout = async () => {
+    // Aby se při dalším startu neukazovalo upozornění na stejnou verzi
+    if (nejnovejsi?.versionCode !== undefined) {
+      await nastavPreskocenouVerzi(nejnovejsi.versionCode);
+    }
+    await otevriStazeni(nejnovejsi?.url);
+  };
+
+  return (
+    <View style={[styles.skupinaBox, { backgroundColor: barvy.pozadiKarty, borderColor: barvy.ohraniceni }]}>
+      <View style={styles.radek}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <View style={[styles.ikonaBox, { backgroundColor: barvy.akcentSvetla }]}>
+            <MaterialCommunityIcons name="update" size={20} color={barvy.akcent} />
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={[styles.radekNadpis, { color: barvy.textHlavni, fontSize: 16 * m }]}>
+              Verze {aktualniVerze.verze}
+            </Text>
+            <Text style={[styles.radekPopis, { color: barvy.textVedlejsi, fontSize: 13 * m }]}>
+              {stav === "kontrola" && "Kontroluji dostupné aktualizace…"}
+              {stav === "aktualni" && "Máte nejnovější verzi."}
+              {stav === "dostupna" && `Dostupná verze ${nejnovejsi?.verze || ""}`}
+              {stav === "chyba" && (chybaText || "Nepodařilo se zkontrolovat.")}
+            </Text>
+          </View>
+        </View>
+        {stav === "kontrola" ? (
+          <ActivityIndicator size="small" color={barvy.akcent} />
+        ) : stav === "aktualni" ? (
+          <MaterialCommunityIcons name="check-circle" size={22} color={barvy.akcent} />
+        ) : null}
+      </View>
+
+      {stav === "dostupna" && (
+        <TouchableOpacity
+          style={[styles.syncTlacitko, { backgroundColor: barvy.akcent, marginTop: 14 }]}
+          onPress={stahnout}
+          activeOpacity={0.85}
+        >
+          <MaterialCommunityIcons name="download" size={20 * m} color="#FFFFFF" />
+          <Text style={[styles.syncTlacitkoText, { fontSize: 15 * m, color: "#fff" }]}>
+            Stáhnout aktualizaci
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {stav === "chyba" && (
+        <TouchableOpacity
+          style={[styles.syncTlacitko, { backgroundColor: barvy.akcent, marginTop: 14 }]}
+          onPress={zkontrolovat}
+          activeOpacity={0.85}
+        >
+          <MaterialCommunityIcons name="refresh" size={20 * m} color="#FFFFFF" />
+          <Text style={[styles.syncTlacitkoText, { fontSize: 15 * m, color: "#fff" }]}>
+            Zkusit znovu
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {stav === "aktualni" && (
+        <TouchableOpacity
+          style={[styles.syncTlacitko, { backgroundColor: barvy.ohraniceni, marginTop: 14 }]}
+          onPress={zkontrolovat}
+          activeOpacity={0.85}
+        >
+          <MaterialCommunityIcons name="refresh" size={20 * m} color={barvy.textVedlejsi} />
+          <Text style={[styles.syncTlacitkoText, { fontSize: 15 * m, color: barvy.textHlavni }]}>
+            Zkontrolovat znovu
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      <Text style={[styles.syncPopis, { color: barvy.textPotrebny, fontSize: 12 * m, marginTop: 8 }]}>
+        Aplikace se aktualizuje ručním stažením nového APK z pupen.org. Kontrola vyžaduje připojení k internetu.
+      </Text>
+    </View>
   );
 };
 

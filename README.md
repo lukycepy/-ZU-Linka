@@ -23,35 +23,45 @@ Vyvinuta pomocí **Expo (React Native)** pro platformy **Android**, **iOS** a **
 ```
 projekt-linka/
 ├── App.js                          # Hlavní vstupní bod - navigace, stav aplikace
-├── app.json                        # Expo konfigurace (název, icony, oprávnění)
+├── app.json                        # Expo konfigurace (název, icony, oprávnění, verze)
 ├── package.json                    # Závislosti a skripty
 ├── babel.config.js                 # Babel konfigurace pro Expo
-├── eas.json                        # EAS Build profily (dev/preview/production)
-├── kontakty.json                   # Vzorová datová sada - hostovaná na webu
+├── eas.json                        # EAS Build profily (development/preview/apk/production)
+├── kontakty.json                   # Datová sada kontaktů - hostovaná na pupen.org
+├── verze.json                      # Metadata nejnovější verze aplikace (kontrola aktualizací)
+├── linka.html                      # Distribuční stránka ke stažení APK (hostovaná na pupen.org)
+├── odesli-mail.php                 # Serverový endpoint pro odesílání e-mailů z formuláře
 └── src/
     ├── data/
-    │   └── defaultContacts.js      # Default data (pro 1. spuštění offline)
+    │   └── defaultContacts.js      # Default data + URL konstanty (kontakty, verze, APK)
     │
     ├── services/
     │   ├── storageService.js       # Správa AsyncStorage (kontakty, oblíbené)
     │   ├── syncService.js          # Synchronizace na pozadí + verzování
-    │   └── contactsService.js      # Vyhledávání, formátování, volání tel://
+    │   ├── updateService.js        # Kontrola dostupných aktualizací aplikace
+    │   ├── shareService.js         # Uložení do telefonu / vCard + sdílení kontaktu
+    │   ├── emailService.js         # Odesílání formuláře přes odesli-mail.php
+    │   └── contactsService.js      # Vyhledávání, formátování, volání (linka / telefon)
     │
     └── components/
         ├── RychleVytaceni.js       # Obrazovka s číselnou klávesnicí
-        └── VyhledavaniKontaktu.js  # Obrazovka s vyhledáváním + seznam
+        ├── VyhledavaniKontaktu.js  # Obrazovka s vyhledáváním + seznam
+        ├── KontaktniFormular.js    # Formulář podpory
+        └── Nastaveni.js            # Nastavení + kontrola aktualizací
 ```
 
 ### Klíčové komponenty
 
 | Soubor | Odpovědnost |
 |--------|-------------|
-| `App.js` | Hlavní state management, navigace mezi záložkami, synchronizace, info modal |
+| `App.js` | Hlavní state management, navigace mezi záložkami, synchronizace, kontrola aktualizací |
 | `RychleVytaceni.js` | 3x4 klávesnice, 4místný vstup, **automatické volání po 4. číslici** |
 | `VyhledavaniKontaktu.js` | Fulltextové vyhledávání, seskupení A–Ž, oblíbené, jedno-klik volání |
-| `contactsService.js` | ✨ `vytvorCisloZKlapka()` - doplnění prefixu `+42022438` před 4místnou klapku |
-| `syncService.js` | 🆕 Verzování: stažení nových dat **pouze při vyšším `version` v JSON** |
-| `storageService.js` | 💾 Offline cache v AsyncStorage, oblíbené kontakty |
+| `contactsService.js` | `vytvorCisloZLinky()` - doplnění prefixu `+42022438` před 4místnou linku |
+| `syncService.js` | Verzování: stažení nových dat **pouze při vyšším `version` v JSON** |
+| `updateService.js` | Kontrola nejnovější verze aplikace přes `verze.json` na pupen.org |
+| `shareService.js` | Uložení kontaktu do telefonu, export do vCard, sdílení |
+| `storageService.js` | Offline cache v AsyncStorage, oblíbené kontakty |
 
 ---
 
@@ -63,7 +73,13 @@ projekt-linka/
   "react": "18.2.0",
   "react-native": "0.74.5",
   "@react-native-async-storage/async-storage": "1.23.1",
+  "expo-constants": "~16.0.2",
+  "expo-contacts": "~13.0.5",
+  "expo-file-system": "~17.0.1",
+  "expo-haptics": "~13.0.1",
+  "expo-intent-launcher": "~11.0.1",
   "expo-linking": "~6.3.1",
+  "expo-sharing": "~12.0.1",
   "expo-status-bar": "~1.12.1",
   "@expo/vector-icons": "^14.0.2",
   "react-native-web": "~0.19.10"
@@ -74,7 +90,7 @@ projekt-linka/
 
 ## 🗂️ Schéma JSON souboru
 
-URL: `https://pupen.org/kontakty.json`
+URL: `https://www.pupen.org/apps/kontakty.json`
 
 ```jsonc
 {
@@ -89,7 +105,8 @@ URL: `https://pupen.org/kontakty.json`
       "fakulta": "Fakulta agrobiologie, potravinových a přírodních zdrojů",
       "budova": "Kampus - Budova A",
       "mistnost": "A-301",
-      "klapka": "2001",         // 📞 4 čísla - doplní se na +420224382001
+      "linka": "2001",          // 📞 4 čísla - doplní se na +420224382001
+      "telefon": "+420224382001", // ☎️ Volitelné - přímé číslo (jiné než linka)
       "email": "jan.novak@fapp.czu.cz"
     }
   ]
@@ -99,9 +116,25 @@ URL: `https://pupen.org/kontakty.json`
 ⚠️ **Pravidla pro aktualizaci JSON:**
 - Pokaždé zvýšete `version` o +1 (int)
 - `lastUpdated` nastavte na aktuální čas
-- `klapka` musí být **přesně 4 číslice** jako string
+- `linka` musí být **přesně 4 číslice** jako string
+- `telefon` je volitelný – pokud je vyplněný, aplikace nabídne volání na linku i na telefon
 - `id` musí být unikátní a neměnná pro daný kontakt
 - Vyhledávání pracuje přes všechna textová pole
+- Kontakty bez `jmeno` nebo bez `linka` i `telefon` se v aplikaci nezobrazí
+
+### Metadata verze aplikace (`verze.json`)
+
+Slouží ke kontrole dostupných aktualizací. Nahrává se na `https://www.pupen.org/apps/linka/verze.json`.
+
+```jsonc
+{
+  "verze": "1.3.0",           // Textová verze (musí odpovídat app.json)
+  "versionCode": 4,           // Číslo verze z app.json – rozhoduje o „novější verzi"
+  "datum": "2026-10-15",
+  "url": "https://www.pupen.org/apps/linka/linka.apk",
+  "zmeny": ["Popis změn v této verzi"]
+}
+```
 
 ---
 
@@ -137,59 +170,86 @@ npm run web          # Spustí webovou verzi (PWA)
 
 ---
 
-## 🏭 Production build přes EAS Build
+## 🏭 Sestavení a distribuce APK
+
+Aplikace **není publikována v Google Play ani App Store**. Distribuuje se jako instalační soubor **APK**, který si uživatel stáhne z webu spolku. Díky tomu neplatí omezení obchodů (např. citlivé oprávnění `CALL_PHONE`).
 
 ### Požadavky
 - Účet na [expo.dev](https://expo.dev)
 - Nainstalovaný EAS CLI: `npm install -g eas-cli`
 - Přihlášení: `eas login`
 
-### 1. Konfigurace projektu
+### 1. Sestavení APK
 
 ```bash
-# Spusť wizard - přidá ProjectId do app.json
-eas build:configure
+# Produkční APK pro distribuci (profil "apk")
+npx eas-cli build --platform android --profile apk
+
+# Rychlý testovací APK (profil "preview")
+npx eas-cli build --platform android --profile preview
 ```
 
-### 2. Build Android (AAB pro Google Play / APK pro distribuci)
+Build probíhá v **cloudu Expo** – nepotřebuješ Android Studio ani Mac.
+
+### 2. Stažení hotového APK
 
 ```bash
-# ⚠️ Pro distribuci zákazníkům (APK soubor, který lze rovnou nainstalovat)
-npm run build:android   # nebo: eas build -p android --profile preview
+# Zobraz seznam buildů
+npx eas-cli build:list --platform android --limit 1
 
-# 📦 Pro Google Play Store (.aab bundle)
-eas build -p android --profile production
+# Stáhni konkrétní build podle ID
+npx eas-cli build:download --build-id <BUILD_ID>
 ```
 
-### 3. Build iOS (IPA pro App Store / TestFlight)
+### 3. Nahrání na web
 
-```bash
-# 🍎 IPA pro TestFlight / App Store
-npm run build:ios      # nebo: eas build -p ios --profile production
+Soubory nahraj na server do složky `www.pupen.org/apps/linka/`:
+
+```
+apps/
+├── kontakty.json      # data kontaktů
+├── odesli-mail.php    # endpoint pro e-maily
+└── linka/
+    ├── index.html     # distribuční stránka (obsah souboru linka.html)
+    ├── linka.apk      # nejnovější APK
+    └── verze.json     # metadata verze (kontrola aktualizací)
 ```
 
-### 4. Build obou platform najednou
+### 🔁 Postup při vydání nové verze
 
-```bash
-npm run build:all
-```
+1. **Zvyšte verzi** v `app.json`:
+   - `expo.version` (např. `1.3.0` → `1.4.0`)
+   - `expo.android.versionCode` (např. `4` → `5`) — **musí vždy růst**
+   - `expo.ios.buildNumber`
+2. **Sestavte APK** – `npx eas-cli build --platform android --profile apk`
+3. **Stáhněte APK** a nahraďte `linka.apk` na serveru (název souboru ponechte).
+4. **Aktualizujte `verze.json`** na serveru – nová `verze`, `versionCode`, `datum`, `zmeny[]`.
+5. **Aktualizujte `linka.html`** (verze + seznam změn) a nahrajte jako `index.html`.
 
-🏗️ Build probíhá v **cloudu Expo**, takže nepotřebuješ:
-- ❌ Mac pro iOS build
-- ❌ Android Studio nainstalované lokálně
-- ❌ Xcode
+> ⚠️ **Keystore neměňte.** EAS jej spravuje na serveru a při každém buildu použije stejný. Kdyby se změnil, uživatelé by museli aplikaci před aktualizací odinstalovat.
+
+### 🔔 Jak funguje kontrola aktualizací
+
+Aplikace při startu a při otevření *Nastavení → Aktualizace aplikace* stáhne `verze.json` a porovná `versionCode`. Pokud je na serveru vyšší, zobrazí upozornění s tlačítkem **Stáhnout**, které otevře prohlížeč s novým APK. Volbou „Později" se upozornění u dané verze už neopakuje.
 
 ---
 
 ## 🔐 Oprávnění a bezpečnost
 
-| Platforma | Přístup k volání | Oprávnění |
-|-----------|-----------------|-----------|
-| **Android** | `Intent` pro otevření Dialeru | ❌ Žádné speciální oprávnění (nepoužíváme `CALL_PHONE`) |
-| **iOS** | `tel://` URL scheme | ✅ Přidáno `LSApplicationQueriesSchemes: ["tel"]` v Info.plist |
-| **Web (PWA)** | `tel:` odkaz | Žádné - záleží na prohlížeči |
+| Platforma | Způsob volání | Oprávnění |
+|-----------|---------------|-----------|
+| **Android** | `Intent.ACTION_CALL` – hovor se vytočí okamžitě | ✅ `CALL_PHONE` (žádáno za běhu) + `READ_CONTACTS`, `WRITE_CONTACTS` |
+| **iOS** | `tel://` URL scheme (otevře aplikaci Telefon) | ✅ `LSApplicationQueriesSchemes: ["tel"]`, `NSContactsUsageDescription` |
+| **Web (PWA)** | `tel:` odkaz | Žádné – záleží na prohlížeči |
 
-> **Bezpečnostní rozhodnutí:** Nepoužíváme oprávnění `CALL_PHONE`, které by umožňovalo přímé volání bez uživatelské interakce. Otevíráme pouze **nativní telefonní aplikaci s předvyplněným číslem**, kdy uživatel musí potvrdit zmáčknutím zelené tlačítka. Toto je bezpečnější řešení a nevyžaduje žádná zvláštní oprávnění.
+> **Volání:** Na Androidu aplikace nejprve požádá o oprávnění `CALL_PHONE` a poté hovor vytočí přímo přes `ACTION_CALL`. Pokud oprávnění není uděleno nebo volání selže, automaticky se použije bezpečný fallback – otevře se systémový dialer s předvyplněným číslem. iOS neumožňuje hovor přímo uvnitř aplikace, proto se vždy otevře nativní aplikace Telefon.
+>
+> **Nižší nároky kvůli APK distribuci:** Protože aplikace není v Google Play, neplatí omezení pro citlivá oprávnění a `CALL_PHONE` je možné používat bez schvalování.
+
+### Ostatní oprávnění
+
+- `READ_CONTACTS` / `WRITE_CONTACTS` – pouze pro funkci „Uložit kontakt do telefonu" (na vyžádání uživatele).
+- Aplikace nevyžaduje přístup k poloze, kameře, mikrofonu ani souborům.
 
 ---
 
@@ -202,7 +262,7 @@ npm run build:all
 
 2. Nahrajte zpět na server přes FTP/SFTP/scp:
    ```bash
-   scp kontakty.json uzivatel@server:/var/www/pupen.org/kontakty.json
+   scp kontakty.json uzivatel@server:/var/www/pupen.org/apps/kontakty.json
    ```
 
 3. V aplikaci klikněte na ikonu ☁️ (cloud sync) v hlavičce, nebo jen restartujte aplikaci.
@@ -216,8 +276,8 @@ npm run build:all
 | Funkce | Popis |
 |--------|-------|
 | ⚡ **Automatické vytáčení** | Po zadání 4 číslic se hovor spustí sám za 300ms |
-| 📞 **Prefix +42022438** | Každá 4místná klapka → `+420 224 38X XXX` |
-| 🔍 **Fulltext vyhledávání** | Hledá ve všech polích: jméno, oddělení, fakulta, budova, klapka, email |
+| 📞 **Prefix +42022438** | Každá 4místná linka → `+420 224 38X XXX` |
+| 🔍 **Fulltext vyhledávání** | Hledá ve všech polích: jméno, oddělení, fakulta, budova, linka, email |
 | 🇨🇿 **Odstranění diakritiky** | Hledání "cv" najde i "ČVUT" |
 | 📑 **Seskupení A–Ž** | Bez vyhledávání jsou kontakty seskupené podle příjmení |
 | ⭐ **Oblíbené** | Klik na hvězdu přidá mezi oblíbené, filtrování přes ikonu ★ |

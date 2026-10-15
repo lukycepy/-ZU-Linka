@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Linka od Pupenu – stažení aplikace</title>
+<meta name="description" content="Linka od Pupenu – aplikace pro rychlé vyhledávání a vytáčení interních telefonních linek. Ke stažení jako APK." />
+<style>
+  :root {
+    --zelena: #15803d;
+    --zelena-svetla: #e7f5ec;
+    --text: #1f2937;
+    --text-vedlejsi: #6b7280;
+    --pozadi: #f8fafc;
+    --karta: #ffffff;
+    --ohraniceni: #e5e7eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--pozadi);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  header {
+    background: var(--zelena);
+    color: #fff;
+    padding: 48px 20px 40px;
+    text-align: center;
+  }
+  header .logo {
+    width: 88px; height: 88px;
+    border-radius: 24px;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+  }
+  header h1 { margin: 0 0 6px; font-size: 30px; font-weight: 800; }
+  header p { margin: 0; opacity: .9; font-size: 15px; }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 20px 64px; }
+  .karta {
+    background: var(--karta);
+    border: 1px solid var(--ohraniceni);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .stazeni { text-align: center; }
+  .tlacitko {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--zelena);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 17px;
+    padding: 16px 32px;
+    border-radius: 14px;
+    margin: 8px 0 4px;
+  }
+  .tlacitko:hover { background: #12692f; }
+  .verze {
+    color: var(--text-vedlejsi);
+    font-size: 14px;
+    margin-top: 12px;
+  }
+  h2 {
+    font-size: 18px;
+    margin: 0 0 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  ol, ul { margin: 0; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  .mrizka {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .mrizka .text { flex: 1; min-width: 220px; }
+  .qr {
+    width: 160px; height: 160px;
+    border: 1px solid var(--ohraniceni);
+    border-radius: 12px;
+    padding: 8px;
+    background: #fff;
+  }
+  .upozorneni {
+    background: var(--zelena-svetla);
+    border: 1px solid #cdebd6;
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-size: 14px;
+    color: #14532d;
+  }
+  .soukromi {
+    color: var(--text-vedlejsi);
+    font-size: 13px;
+    text-align: center;
+    margin-top: 32px;
+  }
+  a.odkaz { color: var(--zelena); }
+  .ikona { flex: 0 0 auto; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.4 21 3 13.6 3 4.5 3 3.9 3.4 3.5 4 3.5h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1l-2.3 2.4z" fill="#ffffff"/>
+    </svg>
+  </div>
+  <h1>Linka od Pupenu</h1>
+  <p>Rychlé vyhledávání a vytáčení interních linek</p>
+</header>
+
+<main>
+  <div class="karta stazeni">
+    <a class="tlacitko" href="linka.apk" download>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Stáhnout aplikaci (APK)
+    </a>
+    <p class="verze">
+      Verze <strong>1.3.0</strong> · aktualizováno 15. 10. 2026 · Android 6.0 a novější
+    </p>
+  </div>
+
+  <div class="karta">
+    <h2>Co je nového ve verzi 1.3.0</h2>
+    <ul>
+      <li>Kontrola dostupných aktualizací přímo v aplikaci</li>
+      <li>Možnost uložit kontakt jako vCard (do telefonu nebo jiné aplikace)</li>
+      <li>Přímé vytáčení hovoru na Androidu</li>
+      <li>Vyhledávání a volání na 4místné linky</li>
+    </ul>
+  </div>
+
+  <div class="karta">
+    <h2>Skenujte a nainstalujte</h2>
+    <div class="mrizka">
+      <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=0&data=https%3A%2F%2Fwww.pupen.org%2Fapps%2Flinka%2Flinka.apk" alt="QR kód pro stažení aplikace Linka" />
+      <div class="text">
+        Naskenujte QR kód telefonem a stáhněte si instalační soubor APK přímo do zařízení.
+      </div>
+    </div>
+  </div>
+
+  <div class="karta">
+    <h2>Jak aplikaci nainstalovat</h2>
+    <ol>
+      <li>Stáhněte soubor <strong>linka.apk</strong> do telefonu.</li>
+      <li>Otevřete stažený soubor (např. v oznámení nebo v aplikaci Soubory).</li>
+      <li>Telefon se zeptá na povolení instalace z tohoto zdroje – povolte ji v <em>Nastavení → Aplikace → Speciální přístup → Instalace neznámých aplikací</em>.</li>
+      <li>Potvrďte instalaci. Aplikaci pak najdete v seznamu aplikací pod názvem <strong>Linka</strong>.</li>
+    </ol>
+    <p style="margin: 14px 0 0; color: var(--text-vedlejsi); font-size: 14px;">
+      Při aktualizaci na novější verzi stačí stáhnout a nainstalovat nový soubor – data i oblíbené kontakty zůstanou zachovány.
+    </p>
+  </div>
+
+  <div class="karta">
+    <h2>Proč není v Google Play?</h2>
+    <div class="upozorneni">
+      Aplikace Linka je nekomerční studentský projekt spolku Pupen, z.s. Není publikována v Google Play ani App Store, proto ji distribuujeme přímo jako instalační soubor APK. Na iOS (iPhone) aplikaci přes APK nainstalovat nelze.
+    </div>
+  </div>
+
+  <div class="karta">
+    <h2>Potřebujete poradit?</h2>
+    <p style="margin: 0 0 10px;">
+      Napište nám na <a class="odkaz" href="mailto:tech@pupen.org">tech@pupen.org</a> nebo použijte formulář přímo v aplikaci v záložce <strong>Podpora</strong>.
+    </p>
+    <p style="margin: 0;">
+      Více o spolku na <a class="odkaz" href="https://pupen.org">pupen.org</a>.
+    </p>
+  </div>
+
+  <p class="soukromi">
+    Linka od Pupenu je neoficiální aplikace Studentského spolku Pupen, z.s. Kontaktní údaje vycházejí z veřejně dostupných zdrojů.<br />
+    © 2026 Studentský spolek Pupen, z.s.
+  </p>
+</main>
+</body>
+</html>
