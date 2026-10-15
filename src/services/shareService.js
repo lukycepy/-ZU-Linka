@@ -181,6 +181,67 @@ export const sdiletKontakt = async (kontakt) => {
 };
 
 /**
+ * Uloží kontakt jako .vcf soubor a otevře systémové menu,
+ * aby uživatel mohl kontakt uložit do své aplikace Kontaktů
+ * (nebo kamkoliv jinam). Funguje na iOS i Androidu.
+ *
+ * Na rozdíl od ulozitDoTelefonu() (který ukládá přímo přes expo-contacts)
+ * tato funkce dává uživateli kontrolu, kam kontakt uloží.
+ *
+ * @param {object} kontakt Kontakt k uložení
+ * @returns {Promise<{uspech: boolean, metoda?: string, duvod?: string}>}
+ */
+export const ulozitJakoVCard = async (kontakt) => {
+  nactiZavislosti();
+  if (!kontakt) return { uspech: false, duvod: "Prázdný kontakt" };
+
+  if (!ExFileSystem || !ExFileSystem.cacheDirectory) {
+    return { uspech: false, duvod: "Nelze vytvořit soubor na tomto zařízení." };
+  }
+
+  try {
+    const vcard = sestavVCard(kontakt);
+    const bezpecnyNazev = (kontakt.jmeno || "kontakt")
+      .replace(/[^a-zA-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽáčďéěíňóřšťúůýž0-9_-]/g, "_")
+      .substring(0, 40);
+    const cesta = ExFileSystem.cacheDirectory + `${bezpecnyNazev}.vcf`;
+
+    await ExFileSystem.writeAsStringAsync(cesta, vcard, {
+      encoding: ExFileSystem.EncodingType.UTF8
+    });
+
+    if (ExSharing) {
+      const muzemeSdilet = await ExSharing.isAvailableAsync();
+      if (muzemeSdilet) {
+        await ExSharing.shareAsync(cesta, {
+          mimeType: "text/vcard",
+          dialogTitle: `Uložit kontakt: ${kontakt.jmeno || ""}`,
+          UTI: "public.vcard"
+        });
+        return { uspech: true, metoda: "vcard-ulozeni" };
+      }
+    }
+
+    // Fallback: React Native Share
+    if (ExShare) {
+      await ExShare.share({
+        message: sestavTextKontaktu(kontakt),
+        title: kontakt.jmeno ? `Uložit kontakt: ${kontakt.jmeno}` : "Uložit kontakt"
+      }, {
+        dialogTitle: "Uložit kontakt",
+        subject: kontakt.jmeno ? `Kontakt: ${kontakt.jmeno}` : "Kontakt"
+      });
+      return { uspech: true, metoda: "text-share" };
+    }
+
+    return { uspech: false, duvod: "Žádná metoda sdílení není dostupná." };
+  } catch (e) {
+    console.warn("Uložení jako vCard selhalo:", e.message);
+    return { uspech: false, duvod: e.message || "Neznámá chyba." };
+  }
+};
+
+/**
  * #14 Uložit kontakt do adresáře telefonu přes expo-contacts
  * Požádá o oprávnění, pokud ještě nebylo uděleno
  */

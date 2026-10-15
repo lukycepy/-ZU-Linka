@@ -20,7 +20,7 @@ import {
 } from "../services/contactsService";
 import { MOZNOSTI_RAZENI } from "../services/settingsService";
 import { lehkyImpakt, stredniImpakt, uspech } from "../services/hapticService";
-import { sdiletKontakt, ulozitDoTelefonu } from "../services/shareService";
+import { sdiletKontakt, ulozitDoTelefonu, ulozitJakoVCard } from "../services/shareService";
 
 /**
  * Komponenta pro fulltextové vyhledávání kontaktů
@@ -165,6 +165,14 @@ const VyhledavaniKontaktu = ({
     }
   };
 
+  const handleUlozitVCard = async (kontakt) => {
+    stredniImpakt(nastaveni.haptikaZapnuta);
+    const vysl = await ulozitJakoVCard(kontakt);
+    if (!vysl.uspech) {
+      Alert.alert("Nelze uložit", vysl.duvod || "Zkuste to prosím později.");
+    }
+  };
+
   const handlePrepnutiOblibenehoW = (id) => {
     lehkyImpakt(nastaveni.haptikaZapnuta);
     naPrepnutiOblibeneho(id);
@@ -192,6 +200,7 @@ const VyhledavaniKontaktu = ({
         }}
         naSdilet={() => handleSdilet(item)}
         naExport={() => handleExport(item)}
+        naUlozitVCard={() => handleUlozitVCard(item)}
         barvy={barvy}
         m={m}
       />
@@ -523,6 +532,7 @@ const KontaktPolozka = ({
   naRozbal,
   naSdilet,
   naExport,
+  naUlozitVCard,
   barvy,
   m
 }) => {
@@ -655,6 +665,16 @@ const KontaktPolozka = ({
             <MaterialCommunityIcons name="account-plus-outline" size={18} color={barvy.textAkcent} />
             <Text style={[styly.akceTlacitkoText, { color: barvy.textAkcent, fontSize: 14 * m }]}>
               Uložit do telefonu
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni }]}
+            onPress={naUlozitVCard}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons name="card-account-details-outline" size={18} color={barvy.textAkcent} />
+            <Text style={[styly.akceTlacitkoText, { color: barvy.textAkcent, fontSize: 14 * m }]}>
+              Uložit jako vCard
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
