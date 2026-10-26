@@ -9,7 +9,7 @@
  *    POST https://www.pupen.org/apps/odesli-mail.php
  *
  *  Ten (PHP skript odesli-mail.php v rootu projektu) přepošle
- *  e-mail přes SMTP z adresy apps@pupen.org na tech@pupen.org.
+ *  e-mail přes SMTP z adresy app@pupen.org na tech@pupen.org.
  *
  *  Pokud HTTP požadavek selže (offline, chyba serveru) –
  *  automaticky se použije FALLBACK na původní mailto: odkaz,
@@ -19,13 +19,13 @@
 /** Kam se mají všechny formuláře doručit */
 const EMAIL_PRIIMCE = "tech@pupen.org";
 /** Kdo odesílá (zobrazí se jako From) */
-const EMAIL_ODESILATELE = "apps@pupen.org";
+const EMAIL_ODESILATELE = "app@pupen.org";
 /** Serverový endpoint, který e-mail přepošle přes SMTP */
 const MAIL_ENDPOINT = "https://www.pupen.org/apps/odesli-mail.php";
 
 /**
  * Sestaví HTTP payload pro serverový odesílací skript.
- * Zachová všechny pole, včetně 8 polí Návrhu nového kontaktu (#23).
+ * Zachová všechna pole, včetně polí Návrhu nového kontaktu.
  *
  * @param {object} data
  * @returns {object} Payload, co se pošle jako JSON
@@ -167,7 +167,7 @@ export const odeslatFormular = async (data, { otevreMailto = (url) => {} } = {})
     const payload = sestavHTTPayload(data);
 
     // 1. Nejdříve zkusíme HTTP POST na serverový skript.
-    //    Ten přepošle e-mail přes SMTP z apps@pupen.org na tech@pupen.org
+    //    Ten přepošle e-mail přes SMTP z app@pupen.org na tech@pupen.org
     //    BEZ jakéhokoliv mail klienta.
     const odpoved = await fetch(MAIL_ENDPOINT, {
       method: "POST",

@@ -176,7 +176,7 @@ const KontaktniFormular = ({
 
       // Zpráva uživateli dle výsledku
       if (vysledek.uspech) {
-        // ✅ Doručeno přímo přes HTTP (apps@pupen.org → tech@pupen.org)
+        // ✅ Doručeno přímo přes HTTP (app@pupen.org → tech@pupen.org)
         Alert.alert(
           "✅ Zpráva byla odeslána",
           "Děkujeme! Váš dotaz dorazil přímo na podporu. Ozveme se Vám co nejdříve.",

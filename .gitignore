@@ -12,3 +12,5 @@ web-build/
 .env
 .env.local
 eas.json
+# Obsahuje SMTP heslo – nikdy necommitovat
+odesli-mail.php
