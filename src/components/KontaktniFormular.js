@@ -157,19 +157,18 @@ const KontaktniFormular = ({
       // (emailService.odeslatFormular() si sám volá Linking.openURL pro fallback)
       const vysledek = await odeslatFormular(dataFormulare, {
         otevreMailto: async (url) => {
+          // POZOR: Linking.canOpenURL() vrací na Androidu 11+ u schématu
+          // "mailto:" falešně false (kvůli omezení viditelnosti balíčků),
+          // proto se na ni nespoléháme a otevíráme rovnou – případnou
+          // chybu odchytíme přes try/catch.
           try {
-            const muzeme = await Linking.canOpenURL(url);
-            if (muzeme) {
-              await Linking.openURL(url);
-            } else {
-              Alert.alert(
-                "Pošlete nám e‑mail",
-                `Nepodařilo se otevřít e‑mailovou aplikaci.\n\nNapište nám na:  ${PODPORA_EMAIL}\n${PODPORA_JMENO}`,
-                [{ text: "Zavřít", style: "cancel" }]
-              );
-            }
+            await Linking.openURL(url);
           } catch (e) {
-            Alert.alert("Chyba", `Nelze otevřít e‑mail klienta.\nNapište nám na:  ${PODPORA_EMAIL}`);
+            Alert.alert(
+              "Pošlete nám e‑mail",
+              `Nepodařilo se otevřít e‑mailovou aplikaci.\n\nNapište nám na:  ${PODPORA_EMAIL}\n${PODPORA_JMENO}`,
+              [{ text: "Zavřít", style: "cancel" }]
+            );
           }
         }
       });
@@ -199,7 +198,7 @@ const KontaktniFormular = ({
         // HTTP selhalo, ale otevřel se mail klient → uživatel odesílá ručně
         Alert.alert(
           "📝 Připraveno v e‑mailu",
-          "Formulář se nepodařilo odeslat přímo (pravděpodobně chybí připojení). Byl otevřen Váš e‑mailový klient, stačí tam pouze stisknout Odeslat.",
+          "Zprávu se nepodařilo odeslat přímo z aplikace. Otevřeli jsme Váš e‑mailový klient – stačí tam stisknout Odeslat.",
           [{ text: "Rozumím" }]
         );
       } else {

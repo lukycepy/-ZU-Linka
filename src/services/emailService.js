@@ -198,7 +198,9 @@ export const odeslatFormular = async (data, { otevreMailto = (url) => {} } = {})
     //    síť / server nefungují.
     try {
       const fallbackUrl = sestavMailtoURL(data);
-      otevreMailto(fallbackUrl);
+      // await je důležité – bez něj aplikace hlásí „Připraveno v e-mailu"
+      // dřív, než se e-mailový klient skutečně stihne otevřít.
+      await otevreMailto(fallbackUrl);
     } catch (_) {}
     return {
       uspech: false,
