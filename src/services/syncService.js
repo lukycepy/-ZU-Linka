@@ -2,6 +2,33 @@ import { ziskejVerziDat, ulozKontakty } from "./storageService";
 import { CONTACTS_URL, DEFAULT_CONTACTS } from "../data/defaultContacts";
 
 /**
+ * Převede zastaralý klíč „klapka" na „linka".
+ *
+ * Web mohl (podle starší dokumentace pro správce) posílat pole `klapka`,
+ * zatímco aplikace používá výhradně `linka`. Převod se provede pouze tehdy,
+ * když kontakt nemá platnou hodnotu v `linka`, aby se nepřepsala správná data.
+ * Klíč `klapka` se následně zahodí, aby v datech zůstalo jen jednotné pojmenování.
+ *
+ * @param {Array<Object>} kontakty - Pole kontaktů ze serveru
+ * @returns {Array<Object>} Pole kontaktů s jednotným klíčem `linka`
+ */
+const normalizujKontakty = (kontakty) =>
+  kontakty.map((kontakt) => {
+    if (!kontakt || typeof kontakt !== "object") return kontakt;
+
+    const maLinku =
+      kontakt.linka !== undefined && kontakt.linka !== null && String(kontakt.linka).trim() !== "";
+    const maKlapku =
+      kontakt.klapka !== undefined && kontakt.klapka !== null && String(kontakt.klapka).trim() !== "";
+
+    // Platná „linka" má vždy přednost, nic nepřepisujeme
+    if (maLinku || !maKlapku) return kontakt;
+
+    const { klapka, ...zbytek } = kontakt;
+    return { ...zbytek, linka: String(klapka).trim() };
+  });
+
+/**
  * Stáhne aktuální kontaktní data z vzdáleného serveru
  * @returns {Promise<Object|null>} Stažená data nebo null při selhání
  */
@@ -27,7 +54,8 @@ export const stahniKontaktyZeServeru = async () => {
       throw new Error("Neplatná struktura přijatých dat");
     }
 
-    return data;
+    // Sjednotíme pojmenování pole (případné staré „klapka" → „linka")
+    return { ...data, contacts: normalizujKontakty(data.contacts) };
   } catch (chyba) {
     console.error("Chyba při stahování kontaktů:", chyba.message);
     return null;
