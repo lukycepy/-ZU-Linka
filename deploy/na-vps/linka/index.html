@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Linka od Pupenu – stažení aplikace</title>
+<meta name="description" content="Linka od Pupenu – aplikace pro rychlé vyhledávání a vytáčení interních telefonních linek. Ke stažení jako APK." />
+<style>
+  :root {
+    --zelena: #16a34a;
+    --zelena-tmava: #15803d;
+    --cerna: #000000;
+    --bila: #ffffff;
+    --svetla-zelena: #f0fdf4;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bila);
+    color: var(--cerna);
+    line-height: 1.6;
+  }
+  a { color: inherit; }
+  .obal {
+    min-height: 100vh;
+    background: var(--bila);
+  }
+  .horni-lista {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bila);
+    border-bottom: 2px solid var(--cerna);
+  }
+  .horni-lista__obsah,
+  .sekce {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+  }
+  .horni-lista__obsah {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 72px;
+  }
+  .znacka {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .znacka__ikona {
+    width: 42px;
+    height: 42px;
+    border: 2px solid var(--cerna);
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: var(--bila);
+  }
+  .znacka__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .znacka__nad {
+    font-size: 11px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 900;
+    color: var(--zelena-tmava);
+  }
+  .znacka__nazev {
+    font-size: 18px;
+    line-height: 1.1;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+  .nav a {
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  .nav a:hover,
+  .nav a:focus-visible {
+    color: var(--zelena);
+  }
+  .hero {
+    background: var(--cerna);
+    color: var(--bila);
+    padding: 72px 0 120px;
+  }
+  .hero__obsah {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 2px solid var(--bila);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    background: var(--cerna);
+  }
+  .hero h1 {
+    margin: 22px 0 18px;
+    font-family: Montserrat, Inter, sans-serif;
+    font-size: clamp(40px, 7vw, 82px);
+    line-height: 0.98;
+    letter-spacing: -0.05em;
+    font-weight: 900;
+    max-width: 920px;
+  }
+  .hero h1 span {
+    color: #4ade80;
+  }
+  .hero p {
+    margin: 0;
+    max-width: 720px;
+    font-size: clamp(16px, 2.3vw, 24px);
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+  }
+  .hero__akce {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 34px;
+  }
+  .tlacitko,
+  .tlacitko--sekundarni {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 58px;
+    padding: 0 26px;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 16px;
+    transition: 0.2s ease;
+  }
+  .tlacitko {
+    background: var(--zelena);
+    color: var(--bila);
+    border-color: var(--zelena);
+  }
+  .tlacitko:hover,
+  .tlacitko:focus-visible {
+    background: var(--zelena-tmava);
+    border-color: var(--zelena-tmava);
+  }
+  .tlacitko--sekundarni {
+    background: var(--cerna);
+    color: var(--bila);
+    border-color: var(--bila);
+  }
+  .tlacitko--sekundarni:hover,
+  .tlacitko--sekundarni:focus-visible {
+    color: #4ade80;
+    border-color: #4ade80;
+  }
+  .prehlad {
+    width: min(1120px, calc(100% - 32px));
+    margin: -58px auto 0;
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .mini-karta,
+  .karta {
+    background: var(--bila);
+    border: 2px solid var(--cerna);
+    border-radius: 32px;
+  }
+  .mini-karta {
+    padding: 28px 24px;
+    text-align: center;
+  }
+  .mini-karta__ikona {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 18px;
+    border-radius: 20px;
+    border: 2px solid var(--cerna);
+    display: grid;
+    place-items: center;
+    color: var(--zelena);
+  }
+  .mini-karta h2,
+  .karta h2 {
+    margin: 0 0 12px;
+    font-family: Montserrat, Inter, sans-serif;
+    letter-spacing: -0.02em;
+  }
+  .mini-karta h2 {
+    font-size: 22px;
+  }
+  .mini-karta p,
+  .meta,
+  .text-vedlejsi {
+    margin: 0;
+    color: var(--cerna);
+    opacity: 0.75;
+  }
+  .sekce {
+    padding: 72px 0 0;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .karta {
+    padding: 30px;
+  }
+  .stitek {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--zelena-tmava);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  .seznam {
+    margin: 0;
+    padding-left: 22px;
+  }
+  .seznam li + li {
+    margin-top: 10px;
+  }
+  .kroky {
+    display: grid;
+    gap: 14px;
+  }
+  .krok {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .krok__cislo {
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    border: 2px solid var(--cerna);
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    color: var(--zelena-tmava);
+  }
+  .qr-box {
+    display: grid;
+    place-items: center;
+    gap: 18px;
+    text-align: center;
+  }
+  .qr {
+    width: min(100%, 220px);
+    aspect-ratio: 1;
+    background: var(--bila);
+    border: 2px solid var(--cerna);
+    border-radius: 24px;
+    padding: 12px;
+  }
+  .upozorneni {
+    background: var(--svetla-zelena);
+  }
+  .paticka {
+    margin-top: 72px;
+    padding: 28px 0 52px;
+    border-top: 2px solid var(--cerna);
+    background: var(--cerna);
+    color: var(--bila);
+  }
+  .paticka__obsah {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 14px 24px;
+    font-size: 13px;
+  }
+  .paticka a {
+    text-decoration: none;
+  }
+  .paticka a:hover,
+  .paticka a:focus-visible {
+    color: #4ade80;
+  }
+  :focus-visible {
+    outline: 3px solid var(--zelena);
+    outline-offset: 3px;
+  }
+  @media (max-width: 960px) {
+    .prehlad,
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .horni-lista__obsah {
+      padding: 12px 0;
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .nav {
+      gap: 14px;
+    }
+  }
+  @media (max-width: 640px) {
+    .hero {
+      padding: 56px 0 96px;
+    }
+    .mini-karta,
+    .karta {
+      border-radius: 26px;
+    }
+    .karta {
+      padding: 24px;
+    }
+    .tlacitko,
+    .tlacitko--sekundarni {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="obal">
+  <div class="horni-lista">
+    <div class="horni-lista__obsah">
+      <a class="znacka" href="https://pupen.org" target="_blank" rel="noopener noreferrer">
+        <span class="znacka__ikona" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="znacka__text">
+          <span class="znacka__nad">Aplikace</span>
+          <span class="znacka__nazev">Linka od Pupenu</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Rychlá navigace">
+        <a href="#stahnout">Stáhnout</a>
+        <a href="#instalace">Instalace</a>
+        <a href="#zmeny">Změny</a>
+        <a href="https://pupen.org" target="_blank" rel="noopener noreferrer">Pupen.org</a>
+      </nav>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="hero__obsah">
+      <span class="badge">Android aplikace</span>
+      <h1>Volejte na <span>linky</span> rychleji.</h1>
+      <p>
+        Linka od Pupenu je jednoduchá mobilní aplikace pro rychlé vyhledávání kontaktů,
+        fulltextové hledání a okamžité vytáčení interních linek.
+      </p>
+      <div class="hero__akce">
+        <a id="stahnout" class="tlacitko" href="linka.apk" download>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Stáhnout APK
+        </a>
+        <a class="tlacitko--sekundarni" href="#instalace">Jak nainstalovat</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="prehlad" aria-label="Přehled aplikace">
+    <article class="mini-karta">
+      <div class="mini-karta__ikona" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M7 4h10M7 20h10M6 8h12M6 12h12M6 16h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>Offline připravená</h2>
+      <p>Aplikace startuje z lokálních dat a synchronizuje se na pozadí.</p>
+    </article>
+    <article class="mini-karta">
+      <div class="mini-karta__ikona" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M4 12h16M12 4v16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>Rychlé vytáčení</h2>
+      <p>Po zadání 4 číslic se automaticky vytvoří celé číslo a spustí se hovor.</p>
+    </article>
+    <article class="mini-karta">
+      <div class="mini-karta__ikona" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M10 18a8 8 0 1 1 5.3-14l4.7 4.7-2 2-4.1-4.1A5 5 0 1 0 15 15l4.1-4.1 2 2L16.4 17.6A7.97 7.97 0 0 1 10 18Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <h2>Jedním kliknutím</h2>
+      <p>U kontaktu stačí klepnout a volíte na linku nebo telefon bez zdržení.</p>
+    </article>
+  </section>
+
+  <section class="sekce">
+    <div class="grid">
+      <article class="karta" id="zmeny">
+        <span class="stitek">Verze 1.3.1</span>
+        <h2>Co je v aktuální verzi</h2>
+        <p class="meta" style="margin-bottom:18px;">Aktualizováno 15. 10. 2026 · Android 6.0 a novější</p>
+        <ul class="seznam">
+          <li>První ostrá verze aplikace Linka.</li>
+          <li>Kontrola dostupných aktualizací přímo v aplikaci.</li>
+          <li>Přímé vytáčení hovoru na Androidu.</li>
+          <li>Uložení kontaktu do telefonu i jako vCard.</li>
+          <li>Vyhledávání a volání na 4místné linky.</li>
+        </ul>
+      </article>
+
+      <aside class="karta">
+        <span class="stitek">QR kód</span>
+        <div class="qr-box">
+          <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=0&data=https%3A%2F%2Fwww.pupen.org%2Fapps%2Flinka%2Flinka.apk" alt="QR kód pro stažení aplikace Linka" />
+          <p class="text-vedlejsi">
+            Naskenujte QR kód telefonem a stáhněte instalační soubor přímo do zařízení.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="sekce" id="instalace">
+    <div class="grid">
+      <article class="karta">
+        <span class="stitek">Instalace</span>
+        <h2>Jak aplikaci nainstalovat</h2>
+        <div class="kroky">
+          <div class="krok">
+            <div class="krok__cislo">1</div>
+            <div><strong>Stáhněte soubor `linka.apk`</strong><br />Otevřete ho v oznámení nebo v aplikaci Soubory.</div>
+          </div>
+          <div class="krok">
+            <div class="krok__cislo">2</div>
+            <div><strong>Povolte instalaci z tohoto zdroje</strong><br />Android Vás přesměruje do nastavení pro jednorázové povolení.</div>
+          </div>
+          <div class="krok">
+            <div class="krok__cislo">3</div>
+            <div><strong>Potvrďte instalaci</strong><br />Aplikaci pak najdete v seznamu aplikací pod názvem Linka.</div>
+          </div>
+          <div class="krok">
+            <div class="krok__cislo">4</div>
+            <div><strong>Při další verzi stačí nainstalovat nový APK</strong><br />Data i oblíbené kontakty zůstanou zachované.</div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="karta upozorneni">
+        <span class="stitek">Důležité</span>
+        <h2>Proč aplikace není v Google Play</h2>
+        <p>
+          Linka od Pupenu je neoficiální studentský projekt spolku Pupen, z.s.
+          Distribuujeme ji přímo jako APK. Na iOS není instalace přes APK možná.
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="sekce">
+    <div class="grid">
+      <article class="karta">
+        <span class="stitek">Podpora</span>
+        <h2>Potřebujete poradit?</h2>
+        <p style="margin:0 0 16px;">
+          Napište nám na <a href="mailto:tech@pupen.org" style="color:var(--zelena-tmava);font-weight:800;">tech@pupen.org</a>
+          nebo použijte formulář přímo v aplikaci v záložce <strong>Podpora</strong>.
+        </p>
+        <a class="tlacitko" href="mailto:tech@pupen.org">Napsat na podporu</a>
+      </article>
+
+      <aside class="karta">
+        <span class="stitek">O projektu</span>
+        <h2>Nezávislá aplikace</h2>
+        <p style="margin:0;">
+          Linka od Pupenu je neoficiální aplikace Studentského spolku Pupen, z.s.
+          Kontaktní údaje vycházejí z veřejně dostupných zdrojů.
+          Více o spolku najdete na <a href="https://pupen.org" target="_blank" rel="noopener noreferrer" style="color:var(--zelena-tmava);font-weight:800;">pupen.org</a>.
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <footer class="paticka">
+    <div class="paticka__obsah">
+      <div>© 2026 Studentský spolek Pupen, z.s.</div>
+      <div>
+        <a href="https://pupen.org" target="_blank" rel="noopener noreferrer">Pupen.org</a>
+      </div>
+    </div>
+  </footer>
+</div>
+</body>
+</html>
