@@ -2,7 +2,7 @@
   "expo": {
     "name": "Linka",
     "slug": "pupen-linka",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -17,12 +17,12 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.pupen.linka",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "tel"
         ],
-        "NSContactsUsageDescription": "Povolení přístupu ke kontaktům slouží k uložení kontaktu do telefonního seznamu, pokud si to uživatel přání."
+        "NSContactsUsageDescription": "Povolení přístupu ke kontaktům slouží k uložení kontaktu do telefonního seznamu, pokud si to uživatel přeje."
       }
     },
     "android": {
@@ -31,7 +31,7 @@
         "backgroundColor": "#15803d"
       },
       "package": "org.pupen.linka",
-      "versionCode": 4,
+      "versionCode": 5,
       "permissions": [
         "android.permission.WRITE_CONTACTS",
         "android.permission.READ_CONTACTS",

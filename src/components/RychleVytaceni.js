@@ -89,7 +89,7 @@ const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
 
       <View style={[
         styly.displejKontejner,
-        { backgroundColor: barvy.pozadiKarty, borderColor: barvy.ohraniceni, borderWidth: 1 }
+        { backgroundColor: barvy.pozadiKarty, borderColor: barvy.ohraniceni, borderWidth: 2 }
       ]}>
         <TextInput
           ref={inputRef}
@@ -173,7 +173,7 @@ const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
             style={[
               styly.klavesa,
               styly.klavesaSpec,
-              { backgroundColor: barvy.klavesniceKladivoSpec, borderColor: barvy.ohraniceniJemne }
+              { backgroundColor: barvy.klavesniceKladivoSpec, borderColor: barvy.ohraniceni, borderWidth: 2 }
             ]}
             onPress={vymazVse}
             onLongPress={vymazVse}
@@ -193,7 +193,7 @@ const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
             style={[
               styly.klavesa,
               styly.klavesaSpec,
-              { backgroundColor: barvy.klavesniceKladivoSpec, borderColor: barvy.ohraniceniJemne }
+              { backgroundColor: barvy.klavesniceKladivoSpec, borderColor: barvy.ohraniceni, borderWidth: 2 }
             ]}
             onPress={smazPosledni}
             activeOpacity={0.6}
@@ -210,7 +210,11 @@ const RychleVytaceni = ({ barvy, velPisma, nastaveni }) => {
       <TouchableOpacity
         style={[
           styly.tlacitkoHovor,
-          { backgroundColor: jePlatnaLinka(linka) ? barvy.akcent : barvy.textPotrebny }
+          {
+            backgroundColor: jePlatnaLinka(linka) ? barvy.akcent : barvy.textPotrebny,
+            borderColor: jePlatnaLinka(linka) ? barvy.akcent : barvy.textPotrebny,
+            borderWidth: 2
+          }
         ]}
         onPress={provedHovor}
         activeOpacity={0.8}
@@ -231,8 +235,8 @@ const KlavesoveTlacitko = ({ cislo, onPress, barvy, m }) => (
       styly.klavesa,
       {
         backgroundColor: barvy.klavesniceKladivo,
-        borderColor: barvy.ohraniceniJemne,
-        borderWidth: 1
+        borderColor: barvy.ohraniceni,
+        borderWidth: 2
       }
     ]}
     onPress={onPress}
@@ -301,11 +305,7 @@ const styly = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 18,
-    borderRadius: 16,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3
+    borderRadius: 16
   },
   tlacitkoHovorText: {
     color: "#FFFFFF",

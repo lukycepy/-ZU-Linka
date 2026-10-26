@@ -46,24 +46,6 @@ import {
   otevriStazeni,
   ziskejAktualniVerzi
 } from "./src/services/updateService";
-// #16 Android / iOS widget – POUZE Nativní platformy (NE Web / PWA)
-let syncOblibeneWidget = async () => {};
-if (Platform.OS !== "web") {
-  try {
-    // Použijeme dynamickou cestu (string literal concat), aby Metro při static
-    // analýze nenačítal .widget.tsx modul do webového bundle vůbec.
-    // Modul se tedy skutečně načte pouze při běhu na Androidu / iOS.
-    const WIDGET_DIR = "./widgets/";
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const widgetMod = require(WIDGET_DIR + "linka-oblibene.widget");
-    if (widgetMod?.syncOblibeneWidget) {
-      syncOblibeneWidget = widgetMod.syncOblibeneWidget;
-    }
-  } catch (e) {
-    // Pokud modul není dostupný – zůstane no-op, aplikace jede normálně
-    console.warn("Widget modul není načten (OK pro dev / Web build):", e.message);
-  }
-}
 
 const ZALOZKY = {
   RYCHLE_VYTACENI: "rychle",
@@ -178,13 +160,6 @@ export default function App() {
 
       setNacteno(true);
       await synchronizujNaPozadi();
-
-      // #16 Při prvním spuštění synchronizovat oblíbené do widgetu
-      try {
-        await syncOblibeneWidget(oblibeneIds, data.contacts || []);
-      } catch (e) {
-        console.warn("Widget sync po startu selhal:", e.message);
-      }
     } catch (chyba) {
       console.error("Chyba při načítání dat:", chyba);
       setNacteno(true);
@@ -204,13 +179,6 @@ export default function App() {
         const novaData = await nactiKontakty();
         setKontakty(novaData.contacts || []);
         setVerzeDat(novaData.version || 1);
-
-        // #16 Synchronizovat widget i po stažení nových kontaktů
-        try {
-          await syncOblibeneWidget(oblibene, novaData.contacts || []);
-        } catch (e) {
-          console.warn("Widget sync po stažení kontaktů selhal:", e.message);
-        }
       }
       const sync = await ziskejPosledniSynchronizaci();
       setPosledniSync(sync);
@@ -280,17 +248,11 @@ export default function App() {
         ? [...oblibene, idKontaktu]
         : oblibene.filter((id) => id !== idKontaktu);
       setOblibene(noveOblibene);
-      // #16 Synchronizovat do widgetu okamžitě po změně
-      try {
-        await syncOblibeneWidget(noveOblibene, kontakty);
-      } catch (e) {
-        console.warn("Widget sync při přepnutí selhal:", e.message);
-      }
     } catch (chyba) {
       console.error("Chyba při přepínání oblíbeného:", chyba);
       Alert.alert("Chyba", "Nepodařilo se upravit oblíbené kontakty.");
     }
-  }, [nastaveni, oblibene, kontakty]);
+  }, [nastaveni, oblibene]);
 
   const formatujDatumSync = () => {
     if (!posledniSync) return "Nikdy";
@@ -343,7 +305,7 @@ export default function App() {
   return (
     <SafeAreaView style={[styly.kontejner, { backgroundColor: barvy.pozadi }]}>
       <ExpoStatusBar
-        style={tma ? "light" : "light"}
+        style={tma ? "light" : "dark"}
         backgroundColor={barvy.pozadiHlavicky}
       />
 
@@ -367,7 +329,10 @@ export default function App() {
                 lehkyImpakt(nastaveni.haptikaZapnuta);
                 synchronizujNaPozadi();
               }}
-              style={styly.syncTlacitko}
+              style={[
+                styly.syncTlacitko,
+                { borderColor: "rgba(255,255,255,0.45)", borderWidth: 1.5 }
+              ]}
               activeOpacity={0.7}
             >
               {synchronizaceBezi ? (
@@ -381,7 +346,10 @@ export default function App() {
                 lehkyImpakt(nastaveni.haptikaZapnuta);
                 setZobrazitInfoModal(true);
               }}
-              style={styly.infoTlacitko}
+              style={[
+                styly.infoTlacitko,
+                { borderColor: "rgba(255,255,255,0.45)", borderWidth: 1.5 }
+              ]}
               activeOpacity={0.7}
             >
               <MaterialCommunityIcons name="information-outline" size={24} color="#FFFFFF" />
@@ -437,7 +405,6 @@ export default function App() {
           <KontaktniFormular
             barvy={barvy}
             velPisma={velPisma}
-            naZmenuNastaveni={naZmenuNastaveni}
           />
         ) : (
           // ZÁLOŽKA NASTAVENÍ
@@ -458,7 +425,7 @@ export default function App() {
       {/* Dolní navigace – 4 záložky */}
       <View style={[
         styly.dolniNavigaceKontejner,
-        { backgroundColor: barvy.pozadiKarty, borderTopColor: barvy.ohraniceni }
+        { backgroundColor: barvy.pozadiKarty, borderTopColor: barvy.ohraniceni, borderTopWidth: 2 }
       ]}>
         <View style={styly.dolniNavigace}>
           <Zalozka
@@ -523,7 +490,7 @@ export default function App() {
         onRequestClose={() => setZobrazitInfoModal(false)}
       >
         <View style={styly.modalKontejner}>
-          <View style={[styly.modalObsah, { backgroundColor: barvy.pozadiKarty }]}>
+          <View style={[styly.modalObsah, { backgroundColor: barvy.pozadiKarty, borderColor: barvy.ohraniceni, borderWidth: 2 }]}>
             <View style={[styly.modalHlavicka, { borderBottomColor: barvy.ohraniceniJemne }]}>
               <Text style={[styly.modalNadpis, { color: barvy.textHlavni, fontSize: 20 * velPisma }]}>
                 O aplikaci Linka
@@ -680,7 +647,8 @@ export default function App() {
                     styly.modalTlacitkoSekundarni,
                     {
                       backgroundColor: barvy.pozadiKarty,
-                      borderColor: barvy.akcent
+                      borderColor: barvy.ohraniceni,
+                      borderWidth: 2
                     }
                   ]}
                   onPress={() => {
@@ -734,7 +702,16 @@ const Zalozka = ({
   onPress
 }) => (
   <TouchableOpacity
-    style={styly.zalozka}
+    style={[
+      styly.zalozka,
+      aktivni && {
+        backgroundColor: barvy.akcentJemna,
+        borderColor: barvy.akcent,
+        borderWidth: 2,
+        borderRadius: 16,
+        marginHorizontal: 4
+      }
+    ]}
     onPress={onPress}
     activeOpacity={0.75}
   >
@@ -858,7 +835,7 @@ const styly = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.12)"
+    backgroundColor: "rgba(255, 255, 255, 0.08)"
   },
   infoTlacitko: {
     width: 40,
@@ -866,7 +843,7 @@ const styly = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.12)"
+    backgroundColor: "rgba(255, 255, 255, 0.08)"
   },
   zpravaSync: {
     flexDirection: "row",
@@ -889,17 +866,13 @@ const styly = StyleSheet.create({
 
   // Dolní navigace
   dolniNavigaceKontejner: {
-    borderTopWidth: 1,
     paddingBottom: Platform.OS === "ios" ? 8 : 0,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 8
+    paddingHorizontal: 8
   },
   dolniNavigace: {
     flexDirection: "row",
-    paddingTop: 8
+    paddingTop: 8,
+    paddingBottom: 4
   },
   zalozka: {
     flex: 1,
@@ -930,7 +903,7 @@ const styly = StyleSheet.create({
   // Modal
   modalKontejner: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.82)",
     justifyContent: "flex-end"
   },
   modalObsah: {
@@ -945,7 +918,7 @@ const styly = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 12,
-    borderBottomWidth: 1
+    borderBottomWidth: 2
   },
   modalNadpis: {
     fontWeight: "700"
@@ -1091,7 +1064,7 @@ const styly = StyleSheet.create({
   },
   modalTlacitkoSekundarni: {
     backgroundColor: "#FFFFFF",
-    borderWidth: 1.5
+    borderWidth: 2
   },
   modalTlacitkoTextSekundarni: {
     fontWeight: "700"

@@ -252,7 +252,8 @@ const VyhledavaniKontaktu = ({
                 styly.chip,
                 {
                   backgroundColor: akt ? barvy.akcent : barvy.pozadiKarty,
-                  borderColor: akt ? barvy.akcent : barvy.ohraniceni
+                    borderColor: akt ? barvy.akcent : barvy.ohraniceni,
+                    borderWidth: 2
                 }
               ]}
               onPress={() => {
@@ -290,7 +291,8 @@ const VyhledavaniKontaktu = ({
               styly.chipFac,
               {
                 backgroundColor: vybranaFakulta === null ? barvy.akcent : barvy.pozadiKarty,
-                borderColor: vybranaFakulta === null ? barvy.akcent : barvy.ohraniceni
+                    borderColor: vybranaFakulta === null ? barvy.akcent : barvy.ohraniceni,
+                    borderWidth: 2
               }
             ]}
             onPress={() => {
@@ -317,7 +319,8 @@ const VyhledavaniKontaktu = ({
                   styly.chipFac,
                   {
                     backgroundColor: akt ? barvy.akcent : barvy.pozadiKarty,
-                    borderColor: akt ? barvy.akcent : barvy.ohraniceni
+                    borderColor: akt ? barvy.akcent : barvy.ohraniceni,
+                    borderWidth: 2
                   }
                 ]}
                 onPress={() => {
@@ -450,7 +453,7 @@ const VyhledavaciLista = ({
   <View style={styly.vyhledavaciKontejner}>
     <View style={[
       styly.vyhledavaciPolickoKontejner,
-      { backgroundColor: barvy.inputPozadi, borderColor: barvy.inputOhraniceni, borderWidth: 1 }
+      { backgroundColor: barvy.inputPozadi, borderColor: barvy.inputOhraniceni, borderWidth: 2 }
     ]}>
       <MaterialCommunityIcons
         name="magnify"
@@ -484,7 +487,7 @@ const VyhledavaciLista = ({
         styly.oblibeneTlacitko,
         { backgroundColor: zobrazitOblibene ? barvy.hvizda : barvy.pozadiKarty,
           borderColor: zobrazitOblibene ? barvy.hvizda : barvy.ohraniceni,
-          borderWidth: 1
+          borderWidth: 2
         }
       ]}
       onPress={naPrepniOblibene}
@@ -546,7 +549,7 @@ const KontaktPolozka = ({
   return (
     <View style={[
       styly.kontaktPolozka,
-      { backgroundColor: barvy.pozadiKarty, borderColor: barvy.ohraniceniJemne, borderWidth: 1 }
+      { backgroundColor: barvy.pozadiKarty, borderColor: barvy.ohraniceni, borderWidth: 2 }
     ]}>
       <TouchableOpacity
         style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
@@ -648,7 +651,7 @@ const KontaktPolozka = ({
           { borderTopColor: barvy.ohraniceniJemne, backgroundColor: barvy.akcentJemna }
         ]}>
           <TouchableOpacity
-            style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni }]}
+            style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni, backgroundColor: barvy.pozadiKarty, borderWidth: 2 }]}
             onPress={naSdilet}
             activeOpacity={0.7}
           >
@@ -658,7 +661,7 @@ const KontaktPolozka = ({
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni }]}
+            style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni, backgroundColor: barvy.pozadiKarty, borderWidth: 2 }]}
             onPress={naExport}
             activeOpacity={0.7}
           >
@@ -668,7 +671,7 @@ const KontaktPolozka = ({
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni }]}
+            style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni, backgroundColor: barvy.pozadiKarty, borderWidth: 2 }]}
             onPress={naUlozitVCard}
             activeOpacity={0.7}
           >
@@ -678,7 +681,7 @@ const KontaktPolozka = ({
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni }]}
+            style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni, backgroundColor: barvy.pozadiKarty, borderWidth: 2 }]}
             onPress={naZavolani}
             activeOpacity={0.7}
           >
@@ -689,7 +692,7 @@ const KontaktPolozka = ({
           </TouchableOpacity>
           {maTelefon && (
             <TouchableOpacity
-              style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni }]}
+              style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni, backgroundColor: barvy.pozadiKarty, borderWidth: 2 }]}
               onPress={() => naZavolaniTelefon(telefonCislo)}
               activeOpacity={0.7}
             >
@@ -734,9 +737,7 @@ const styly = StyleSheet.create({
     alignItems: "center",
     borderRadius: 12,
     paddingHorizontal: 12,
-    height: 48,
-    shadowOpacity: 0,
-    elevation: 0
+    height: 48
   },
   vyhledavaciIkona: {
     marginRight: 8
@@ -790,8 +791,7 @@ const styly = StyleSheet.create({
   kontaktPolozka: {
     borderRadius: 16,
     padding: 14,
-    marginBottom: 10,
-    shadowOpacity: 0
+    marginBottom: 10
   },
   avatar: {
     width: 48,
@@ -869,9 +869,7 @@ const styly = StyleSheet.create({
     gap: 8,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderWidth: 1,
-    borderRadius: 12,
-    backgroundColor: "#fff"
+    borderRadius: 12
   },
   akceTlacitkoText: {
     fontWeight: "600"
@@ -897,7 +895,6 @@ const styly = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 999,
-    borderWidth: 1,
     gap: 6
   },
   chipFac: {

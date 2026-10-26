@@ -3,14 +3,14 @@
 
 export const BARVY_SVETLE = {
   // Základní pozadí
-  pozadi: "#F9FAFB",
+  pozadi: "#FFFFFF",
   pozadiKarty: "#FFFFFF",
   pozadiHlavicky: "#15803d",
 
   // Text
-  textHlavni: "#111827",
-  textVedlejsi: "#4B5563",
-  textPotrebny: "#6B7280",
+  textHlavni: "#000000",
+  textVedlejsi: "rgba(0, 0, 0, 0.82)",
+  textPotrebny: "rgba(0, 0, 0, 0.58)",
   textNaZelenem: "#FFFFFF",
   textAkcent: "#15803d",
 
@@ -21,8 +21,8 @@ export const BARVY_SVETLE = {
   hvizda: "#F59E0B",
 
   // Stíny a linky
-  ohraniceni: "#E5E7EB",
-  ohraniceniJemne: "#F3F4F6",
+  ohraniceni: "#000000",
+  ohraniceniJemne: "rgba(0, 0, 0, 0.14)",
   stin: "#000000",
 
   // Stavové
@@ -33,36 +33,36 @@ export const BARVY_SVETLE = {
 
   // Specifické komponenty
   klavesniceKladivo: "#FFFFFF",
-  klavesniceKladivoSpec: "#F3F4F6",
-  scrollbar: "#D1D5DB",
+  klavesniceKladivoSpec: "#DCFCE7",
+  scrollbar: "#000000",
 
   // Inputy a formuláře
   inputPozadi: "#FFFFFF",
-  inputOhraniceni: "#E5E7EB"
+  inputOhraniceni: "#000000"
 };
 
 export const BARVY_TMAVE = {
   // Základní pozadí
-  pozadi: "#0F172A",
-  pozadiKarty: "#1E293B",
-  pozadiHlavicky: "#14532D",
+  pozadi: "#000000",
+  pozadiKarty: "#000000",
+  pozadiHlavicky: "#000000",
 
   // Text
-  textHlavni: "#F9FAFB",
-  textVedlejsi: "#D1D5DB",
-  textPotrebny: "#94A3B8",
+  textHlavni: "#FFFFFF",
+  textVedlejsi: "rgba(255, 255, 255, 0.88)",
+  textPotrebny: "rgba(255, 255, 255, 0.62)",
   textNaZelenem: "#FFFFFF",
   textAkcent: "#4ADE80",
 
   // Akcenty
-  akcent: "#4ADE80",
+  akcent: "#16A34A",
   akcentSvetla: "#14532D",
   akcentJemna: "#052E16",
   hvizda: "#FBBF24",
 
   // Stíny a linky
-  ohraniceni: "#334155",
-  ohraniceniJemne: "#1E293B",
+  ohraniceni: "#FFFFFF",
+  ohraniceniJemne: "rgba(255, 255, 255, 0.18)",
   stin: "#000000",
 
   // Stavové
@@ -72,13 +72,13 @@ export const BARVY_TMAVE = {
   info: "#60A5FA",
 
   // Specifické komponenty
-  klavesniceKladivo: "#1E293B",
-  klavesniceKladivoSpec: "#334155",
-  scrollbar: "#334155",
+  klavesniceKladivo: "#000000",
+  klavesniceKladivoSpec: "#052E16",
+  scrollbar: "#FFFFFF",
 
   // Inputy a formuláře
-  inputPozadi: "#0F172A",
-  inputOhraniceni: "#334155"
+  inputPozadi: "#000000",
+  inputOhraniceni: "#FFFFFF"
 };
 
 /**

@@ -71,7 +71,8 @@ const Nastaveni = ({
                   styles.tlacitkoVolba,
                   {
                     borderColor: zvoleno ? barvy.akcent : barvy.ohraniceni,
-                    backgroundColor: zvoleno ? barvy.akcentJemna : barvy.pozadiKarty
+                    backgroundColor: zvoleno ? barvy.akcent : barvy.pozadiKarty,
+                    borderWidth: 2
                   }
                 ]}
                 onPress={() => naZmenuNastaveni("tema", t.id)}
@@ -79,14 +80,17 @@ const Nastaveni = ({
                 <MaterialCommunityIcons
                   name={t.ikona}
                   size={20 * m}
-                  color={zvoleno ? barvy.akcent : barvy.textVedlejsi}
+                  color={zvoleno ? barvy.textNaZelenem : barvy.textVedlejsi}
                 />
                 <Text style={[
                   styles.tlacitkoVolbaText,
-                  { color: zvoleno ? barvy.akcent : barvy.textHlavni, fontSize: 14 * m }
+                  { color: zvoleno ? barvy.textNaZelenem : barvy.textHlavni, fontSize: 14 * m }
                 ]}>
                   {t.nazev}
                 </Text>
+                {zvoleno ? (
+                  <Ionicons name="checkmark-circle" size={18 * m} color={barvy.textNaZelenem} />
+                ) : null}
               </Pressable>
             );
           })}
@@ -116,7 +120,8 @@ const Nastaveni = ({
                   styles.tlacitkoVelikost,
                   {
                     borderColor: zvoleno ? barvy.akcent : barvy.ohraniceni,
-                    backgroundColor: zvoleno ? barvy.akcentJemna : barvy.pozadiKarty
+                    backgroundColor: zvoleno ? barvy.akcentJemna : barvy.pozadiKarty,
+                    borderWidth: 2
                   }
                 ]}
                 onPress={() => naZmenuNastaveni("velikostPisma", vel.id)}
@@ -160,7 +165,7 @@ const Nastaveni = ({
           </View>
           <Switch
             trackColor={{ false: barvy.ohraniceni, true: barvy.akcent }}
-            thumbColor="#ffffff"
+            thumbColor={nastaveni.haptikaZapnuta ? "#ffffff" : (barvy.pozadiKarty)}
             ios_backgroundColor={barvy.ohraniceni}
             onValueChange={(hodnota) => naZmenuNastaveni("haptikaZapnuta", hodnota)}
             value={nastaveni.haptikaZapnuta}
@@ -252,7 +257,12 @@ const Nastaveni = ({
         <TouchableOpacity
           style={[
             styles.syncTlacitko,
-            { backgroundColor: synchronizaceBezi ? barvy.textPotrebny : barvy.akcent, marginTop: 14 }
+            {
+              backgroundColor: synchronizaceBezi ? barvy.textPotrebny : barvy.akcent,
+              marginTop: 14,
+              borderColor: synchronizaceBezi ? barvy.textPotrebny : barvy.akcent,
+              borderWidth: 2
+            }
           ]}
           onPress={naSpustitSynchronizaci}
           activeOpacity={0.85}
@@ -418,7 +428,7 @@ const KartaAktualizace = ({ barvy, m }) => {
 
       {stav === "dostupna" && (
         <TouchableOpacity
-          style={[styles.syncTlacitko, { backgroundColor: barvy.akcent, marginTop: 14 }]}
+          style={[styles.syncTlacitko, { backgroundColor: barvy.akcent, marginTop: 14, borderColor: barvy.akcent, borderWidth: 2 }]}
           onPress={stahnout}
           activeOpacity={0.85}
         >
@@ -431,7 +441,7 @@ const KartaAktualizace = ({ barvy, m }) => {
 
       {stav === "chyba" && (
         <TouchableOpacity
-          style={[styles.syncTlacitko, { backgroundColor: barvy.akcent, marginTop: 14 }]}
+          style={[styles.syncTlacitko, { backgroundColor: barvy.akcent, marginTop: 14, borderColor: barvy.akcent, borderWidth: 2 }]}
           onPress={zkontrolovat}
           activeOpacity={0.85}
         >
@@ -444,7 +454,7 @@ const KartaAktualizace = ({ barvy, m }) => {
 
       {stav === "aktualni" && (
         <TouchableOpacity
-          style={[styles.syncTlacitko, { backgroundColor: barvy.ohraniceni, marginTop: 14 }]}
+          style={[styles.syncTlacitko, { backgroundColor: barvy.pozadiKarty, marginTop: 14, borderColor: barvy.ohraniceni, borderWidth: 2 }]}
           onPress={zkontrolovat}
           activeOpacity={0.85}
         >
@@ -476,7 +486,7 @@ const styles = StyleSheet.create({
   },
   skupinaBox: {
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 2,
     padding: 14,
     overflow: "hidden"
   },
@@ -499,7 +509,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 10,
     paddingHorizontal: 10,
-    borderWidth: 1,
     borderRadius: 12,
     gap: 6
   },
@@ -512,7 +521,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 10,
-    borderWidth: 1,
     borderRadius: 12
   },
   tlacitkoVelikostZnak: {
@@ -564,7 +572,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 10,
-    borderWidth: 1
+    borderWidth: 2
   },
   urlText: {
     fontWeight: "600",
@@ -576,12 +584,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     paddingVertical: 14,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 2
+    borderRadius: 12
   },
   syncTlacitkoText: {
     fontWeight: "700"

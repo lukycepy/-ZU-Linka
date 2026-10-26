@@ -128,8 +128,8 @@ Slouží ke kontrole dostupných aktualizací. Nahrává se na `https://www.pupe
 
 ```jsonc
 {
-  "verze": "1.3.0",           // Textová verze (musí odpovídat app.json)
-  "versionCode": 4,           // Číslo verze z app.json – rozhoduje o „novější verzi"
+  "verze": "1.3.1",           // Textová verze (musí odpovídat app.json)
+  "versionCode": 5,           // Číslo verze z app.json – rozhoduje o „novější verzi"
   "datum": "2026-10-15",
   "url": "https://www.pupen.org/apps/linka/linka.apk",
   "zmeny": ["Popis změn v této verzi"]

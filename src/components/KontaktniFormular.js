@@ -13,13 +13,13 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
 import { odeslatFormular } from "../services/emailService";
+import { ziskejAktualniVerzi } from "../services/updateService";
 
 const PODPORA_EMAIL = "tech@pupen.org";
 const PODPORA_JMENO = "Lukáš Čepelák";
 
 /**
  * Předdefinované typy zpráv
- * #23 přidávámo nový typ „Navrhnout nový kontakt“
  */
 const TYPY_ZPRAVY = [
   { id: "chyba",    nazev: "Nahlásit chybu",              ikona: "bug-outline",           predmet: "Chyba v aplikaci Linka" },
@@ -30,12 +30,11 @@ const TYPY_ZPRAVY = [
 ];
 
 /**
- * Kontaktní formulář s podporou návrhu nového kontaktu (#23)
+ * Kontaktní formulář podpory včetně návrhu nového kontaktu
  */
 const KontaktniFormular = ({
   barvy,
-  velPisma,
-  naZmenuNastaveni
+  velPisma
 }) => {
   const m = velPisma;
   const [typZpravy, setTypZpravy] = useState(TYPY_ZPRAVY[0].id);
@@ -44,7 +43,6 @@ const KontaktniFormular = ({
   const [textZpravy, setTextZpravy] = useState("");
   const [pridatPodrobnostiOSystemu, setPridatPodrobnostiOSystemu] = useState(true);
 
-  // #23 pole pro nový kontakt
   const [novyJmeno, setNovyJmeno] = useState("");
   const [novyOddeleni, setNovyOddeleni] = useState("");
   const [novyFakulta, setNovyFakulta] = useState("");
@@ -65,14 +63,14 @@ const KontaktniFormular = ({
       "\n\n---\n" +
       "Technické informace:\n" +
       `Platforma: ${Platform.OS} ${Platform.Version}\n` +
-      `Verze aplikace: 1.2.0\n` +
+      `Verze aplikace: ${ziskejAktualniVerzi().verze}\n` +
       `Uživatel: ${jmenoOdesilatele || "neuvedeno"}\n` +
       `Kontakt: ${emailOdesilatele || "neuvedeno"}\n`
     );
   };
 
   /**
-   * Sestaví sekci s údaji nového kontaktu do těla mailu (#23)
+   * Sestaví sekci s údaji nového kontaktu do těla mailu
    */
   const sestavNovyKontaktSection = () => {
     if (!jeNovy) return "";
@@ -148,14 +146,14 @@ const KontaktniFormular = ({
         zarizeniInfo: pridatPodrobnostiOSystemu
           ? {
               Platforma: `${Platform.OS} ${Platform.Version || ""}`,
-              "Verze aplikace": "1.2.0",
+              "Verze aplikace": ziskejAktualniVerzi().verze,
               "Jméno uživatele": jmenoOdesilatele || "neuvedeno",
               "E-mail uživatele": emailOdesilatele || "neuvedeno"
             }
           : null
       };
 
-      // Odeslat formulář → Nejprve HTTP (FormSubmit), pokud selže, mailto fallback
+      // Odeslat formulář → HTTP POST na pupen.org, při selhání mailto fallback
       // (emailService.odeslatFormular() si sám volá Linking.openURL pro fallback)
       const vysledek = await odeslatFormular(dataFormulare, {
         otevreMailto: async (url) => {
@@ -178,10 +176,10 @@ const KontaktniFormular = ({
 
       // Zpráva uživateli dle výsledku
       if (vysledek.uspech) {
-        // ✅ Doručeno přímo přes HTTP (app@pupen.org → tech@pupen.org)
+        // ✅ Doručeno přímo přes HTTP (apps@pupen.org → tech@pupen.org)
         Alert.alert(
           "✅ Zpráva byla odeslána",
-          "Děkujeme! Váš dotaz dorazil přímo na podporu (app@pupen.org → tech@pupen.org). Ozveme se Vám co nejdříve.",
+          "Děkujeme! Váš dotaz dorazil přímo na podporu. Ozveme se Vám co nejdříve.",
           [{ text: "Skvělé" }]
         );
 
@@ -249,7 +247,7 @@ const KontaktniFormular = ({
       {/* Záhlaví */}
       <View style={[
         styly.kontaktHlavicka,
-        { backgroundColor: barvy.akcentJemna, borderColor: barvy.ohraniceni, borderWidth: 1 }
+        { backgroundColor: barvy.akcentJemna, borderColor: barvy.ohraniceni, borderWidth: 2 }
       ]}>
         <View style={[styly.avatar, { backgroundColor: barvy.akcent }]}>
           <MaterialCommunityIcons name="account-tie" size={32 * m} color="#FFFFFF" />
@@ -269,7 +267,7 @@ const KontaktniFormular = ({
         <TouchableOpacity
           style={[
             styly.akceTlacitko,
-            { backgroundColor: barvy.pozadiKarty, borderColor: barvy.ohraniceni }
+            { backgroundColor: barvy.pozadiKarty, borderColor: barvy.ohraniceni, borderWidth: 2 }
           ]}
           onPress={otevritPrimyEmail}
           activeOpacity={0.7}
@@ -293,7 +291,7 @@ const KontaktniFormular = ({
               styly.typTlacitko,
               { backgroundColor: typZpravy === typ.id ? barvy.akcent : barvy.pozadiKarty,
                 borderColor: typZpravy === typ.id ? barvy.akcent : barvy.ohraniceni,
-                borderWidth: 1 }
+                borderWidth: 2 }
             ]}
             onPress={() => setTypZpravy(typ.id)}
             activeOpacity={0.7}
@@ -344,7 +342,7 @@ const KontaktniFormular = ({
         autoCapitalize="none"
       />
 
-      {/* ======= #23: Sekce NAVRH KONTAKTU – pouze pokud je vybráno ======= */}
+      {/* Sekce návrhu nového kontaktu – zobrazí se jen při zvoleném typu */}
       {jeNovy && (
         <View style={{ marginTop: 10 }}>
           <View style={[
@@ -524,7 +522,13 @@ const KontaktniFormular = ({
             ? barvy.textPotrebny
             : (textZpravy.trim().length < 3 && !(jeNovy && (novyJmeno || novyLinka)))
               ? barvy.textPotrebny
-              : barvy.akcent }
+              : barvy.akcent,
+            borderColor: odesilaSe
+              ? barvy.textPotrebny
+              : (textZpravy.trim().length < 3 && !(jeNovy && (novyJmeno || novyLinka)))
+                ? barvy.textPotrebny
+                : barvy.akcent,
+            borderWidth: 2 }
         ]}
         onPress={odeslatDotaz}
         activeOpacity={0.85}
@@ -541,7 +545,7 @@ const KontaktniFormular = ({
       </TouchableOpacity>
 
       <Text style={[styly.poznamkaText, { color: barvy.textPotrebny, fontSize: 12 * m }]}>
-        Zpráva je nejprve odesílána přímo přes HTTPS z aplikace (z adresy app@pupen.org na {PODPORA_EMAIL} – bez nutnosti mailového klienta. Pokud toto selže, otevře se Váš e‑mail klient jako záložní řešení.
+        Zpráva se odesílá přímo z aplikace přes zabezpečené HTTPS na adresu {PODPORA_EMAIL}. Pokud se odeslání nezdaří, otevře se Váš e-mailový klient jako záložní řešení.
       </Text>
     </ScrollView>
   );
@@ -574,7 +578,6 @@ const styly = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 12,
     borderRadius: 12,
-    borderWidth: 1,
     gap: 8
   },
   akceText: { fontWeight: "600" },
@@ -624,11 +627,7 @@ const styly = StyleSheet.create({
     gap: 10,
     paddingVertical: 15,
     borderRadius: 14,
-    marginTop: 8,
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 2
+    marginTop: 8
   },
   odeslatTlacitkoText: {
     color: "#FFFFFF",
