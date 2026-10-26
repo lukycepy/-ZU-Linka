@@ -215,6 +215,9 @@ apps/
     └── verze.json     # metadata verze (kontrola aktualizací)
 ```
 
+> ⚠️ `odesli-mail.php` obsahuje SMTP heslo, proto **není součástí gitu** (viz `.gitignore`).
+> Po naklonování repozitáře ho musíte doplnit a vyplnit v něm přihlašovací údaje ke schránce `app@pupen.org`.
+
 ### 🔁 Postup při vydání nové verze
 
 1. **Zvyšte verzi** v `app.json`:
