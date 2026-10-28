@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.pupen.linka",
-      "buildNumber": "9",
+      "buildNumber": "10",
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "tel"
@@ -57,6 +57,16 @@
     },
     "updates": {
       "url": "https://u.expo.dev/11e5c78e-36e2-4f55-b1ab-922ab43c676e"
-    }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.0"
+          }
+        }
+      ]
+    ]
   }
 }
