@@ -17,9 +17,10 @@ const APLIKACE: Aplikace[] = [
     nazev: "ČZU Linka",
     popis: "Rychlé vyhledávání a vytáčení interních linek v jednoduchém mobilním rozhraní.",
     stav: "Aktivní",
-    platformy: ["Android APK"],
+    platformy: ["Android APK", "iOS App Store"],
     detailUrl: "/apps/linka/",
     apkUrl: "/apps/linka/linka.apk",
+    iosUrl: "https://apps.apple.com/cz/search?term=Linka%20od%20Pupenu",
   },
 ];
 
@@ -339,7 +340,9 @@ export default function AppsPage() {
                 </div>
 
                 <div style={styly.meta}>
-                  <div style={styly.metaItem}>Distribuce: přímé stažení</div>
+                  <div style={styly.metaItem}>
+                    Distribuce: {aplikace.iosUrl ? "APK + App Store" : "přímé stažení"}
+                  </div>
                   <div style={styly.metaItem}>Detail: {aplikace.detailUrl}</div>
                 </div>
 
