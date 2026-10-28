@@ -17,12 +17,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.pupen.linka",
-      "buildNumber": "5",
+      "buildNumber": "7",
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "tel"
         ],
-        "NSContactsUsageDescription": "Povolení přístupu ke kontaktům slouží k uložení kontaktu do telefonního seznamu, pokud si to uživatel přeje."
+        "NSContactsUsageDescription": "Povolení přístupu ke kontaktům slouží k uložení kontaktu do telefonního seznamu, pokud si to uživatel přeje.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -50,6 +51,12 @@
       }
     },
     "scheme": "pupen-linka",
-    "owner": "lukycepy"
+    "owner": "lukycepy",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/11e5c78e-36e2-4f55-b1ab-922ab43c676e"
+    }
   }
 }

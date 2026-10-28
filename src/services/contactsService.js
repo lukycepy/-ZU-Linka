@@ -5,7 +5,9 @@ import { Platform, Alert, PermissionsAndroid } from "react-native";
 // Lazy načtení expo-intent-launcher (pouze pro Android ACTION_CALL)
 let IntentLauncher = null;
 try {
-  IntentLauncher = require("expo-intent-launcher").default;
+  // Modul neexportuje default, ale pojmenované funkce. Kvůli .default se na
+  // Androidu nikdy nespustil ACTION_CALL a aplikace padala na otevření dialeru.
+  IntentLauncher = require("expo-intent-launcher");
 } catch (e) {
   IntentLauncher = null;
 }
@@ -35,6 +37,7 @@ export const jePlatnaLinka = (vstup) => {
 /**
  * Vrátí telefonní číslo z kontaktu:
  * - pokud má kontakt vlastní telefon, vrátí ho
+ * - jinak zkusí samostatně uložený mobil
  * - jinak vrátí číslo složené z linky (prefix + 4 čísla)
  * @param {Object} kontakt
  * @returns {string} Kompletní telefonní číslo
@@ -44,6 +47,9 @@ export const ziskejTelefonKontaktu = (kontakt) => {
   // preferujeme přímé telefonní číslo, pokud existuje
   if (kontakt.telefon && String(kontakt.telefon).trim().length > 0) {
     return String(kontakt.telefon).trim();
+  }
+  if (kontakt.mobil && String(kontakt.mobil).trim().length > 0) {
+    return String(kontakt.mobil).trim();
   }
   // jinak sestavíme číslo z linky
   if (kontakt.linka && jePlatnaLinka(kontakt.linka)) {
@@ -108,7 +114,10 @@ export const zavolej = async (cil) => {
           }
         );
 
-        if (stavOpravneni === PermissionsAndroid.RESULTS.GRANTED) {
+        if (
+          stavOpravneni === PermissionsAndroid.RESULTS.GRANTED &&
+          typeof IntentLauncher.startActivityAsync === "function"
+        ) {
           await IntentLauncher.startActivityAsync("android.intent.action.CALL", {
             data: telUrl
           });
@@ -153,7 +162,7 @@ export const zavolej = async (cil) => {
 
 /**
  * Provede fulltextové vyhledávání v polích kontaktu
- * Hledá v: jméno, oddělení, fakulta, budova, místnost, linka, telefon, email
+ * Hledá v: jméno, oddělení, fakulta, budova, místnost, linka, telefon, mobil, email
  * @param {Array} kontakty - Seznam kontaktů k prohledání
  * @param {string} vyhledavanyText - Text, který hledáme
  * @returns {Array} Filtrovaný seznam kontaktů
@@ -175,6 +184,7 @@ export const vyhledejKontakty = (kontakty, vyhledavanyText) => {
       kontakt.mistnost,
       kontakt.linka,
       kontakt.telefon,
+      kontakt.mobil,
       kontakt.email
     ]
       .filter(Boolean)

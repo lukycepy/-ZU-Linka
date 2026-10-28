@@ -15,7 +15,6 @@ import {
   vyhledejKontakty,
   zavolej,
   formatujCislo,
-  vytvorCisloZLinky,
   seskupKontaktyPodlePrijmeni
 } from "../services/contactsService";
 import { MOZNOSTI_RAZENI } from "../services/settingsService";
@@ -68,7 +67,8 @@ const VyhledavaniKontaktu = ({
       if (!k || !k.jmeno || !String(k.jmeno).trim()) return false;
       const maLinku = k.linka && String(k.linka).trim().length > 0;
       const maTelefon = k.telefon && String(k.telefon).trim().length > 0;
-      return maLinku || maTelefon;
+      const maMobil = k.mobil && String(k.mobil).trim().length > 0;
+      return maLinku || maTelefon || maMobil;
     });
 
     // 1. Filtr oblíbených
@@ -191,7 +191,7 @@ const VyhledavaniKontaktu = ({
         kontakt={item}
         jeObliben={jeObliben}
         rozbalen={rozbalen}
-        naZavolani={() => handleZavolej(item.linka)}
+        naZavolani={() => handleZavolej(item.linka || item.telefon || item.mobil)}
         naZavolaniTelefon={(tel) => handleZavolej(tel)}
         naPrepnutiOblibeneho={() => handlePrepnutiOblibenehoW(item.id)}
         naRozbal={() => {
@@ -540,11 +540,12 @@ const KontaktPolozka = ({
   m
 }) => {
   const inicialy = ziskejInicialy(kontakt.jmeno);
-  // Linka (4místná) → kompletní telefonní číslo
-  const cisloZLinky = kontakt.linka ? vytvorCisloZLinky(kontakt.linka) : "";
-  // Má kontakt vlastní telefonní číslo? (jiné než linka)
-  const maTelefon = !!(kontakt.telefon && String(kontakt.telefon).trim().length > 0);
-  const telefonCislo = maTelefon ? String(kontakt.telefon).trim() : "";
+  // Kontakt může mít pevnou linku i mobil. Pokud je k dispozici jen mobil,
+  // zůstává kvůli kompatibilitě i v poli „telefon", proto porovnáváme obě pole.
+  const telefonCislo = kontakt.telefon ? String(kontakt.telefon).trim() : "";
+  const mobilCislo = kontakt.mobil ? String(kontakt.mobil).trim() : "";
+  const maMobil = mobilCislo.length > 0;
+  const maPevnyTelefon = telefonCislo.length > 0 && telefonCislo !== mobilCislo;
 
   return (
     <View style={[
@@ -574,7 +575,7 @@ const KontaktPolozka = ({
             </Text>
           ) : null}
           <View style={styly.kontaktDetailyRadek}>
-            {kontakt.budova ? (
+            {kontakt.budova || kontakt.mistnost ? (
               <Text style={[styly.kontaktDetail, { color: barvy.textPotrebny, fontSize: 12 * m }]} numberOfLines={1}>
                 <MaterialCommunityIcons name="office-building" size={12} color={barvy.textPotrebny} />
                 {" "}{kontakt.budova}{kontakt.mistnost ? " · " + kontakt.mistnost : ""}
@@ -592,7 +593,19 @@ const KontaktPolozka = ({
                 </Text>
               </View>
             ) : null}
-            {maTelefon ? (
+            {maPevnyTelefon ? (
+              <View style={[styly.kontaktLinkaBadge, { backgroundColor: barvy.akcentSvetla }]}>
+                <MaterialCommunityIcons
+                  name="phone-classic"
+                  size={12}
+                  color={barvy.akcent}
+                />
+                <Text style={[styly.kontaktLinkaText, { color: barvy.textAkcent, fontSize: 12 * m }]}>
+                  {formatujCislo(telefonCislo)}
+                </Text>
+              </View>
+            ) : null}
+            {maMobil ? (
               <View style={[styly.kontaktLinkaBadge, { backgroundColor: barvy.akcentSvetla }]}>
                 <MaterialCommunityIcons
                   name="cellphone"
@@ -600,7 +613,7 @@ const KontaktPolozka = ({
                   color={barvy.akcent}
                 />
                 <Text style={[styly.kontaktLinkaText, { color: barvy.textAkcent, fontSize: 12 * m }]}>
-                  {formatujCislo(telefonCislo)}
+                  {formatujCislo(mobilCislo)}
                 </Text>
               </View>
             ) : null}
@@ -690,15 +703,27 @@ const KontaktPolozka = ({
               {kontakt.linka ? `Zavolat na linku ${kontakt.linka}` : "Zavolat"}
             </Text>
           </TouchableOpacity>
-          {maTelefon && (
+          {maPevnyTelefon && (
             <TouchableOpacity
               style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni, backgroundColor: barvy.pozadiKarty, borderWidth: 2 }]}
               onPress={() => naZavolaniTelefon(telefonCislo)}
               activeOpacity={0.7}
             >
+              <MaterialCommunityIcons name="phone-classic" size={18} color={barvy.textAkcent} />
+              <Text style={[styly.akceTlacitkoText, { color: barvy.textAkcent, fontSize: 14 * m }]}>
+                Zavolat na pevnou linku {formatujCislo(telefonCislo)}
+              </Text>
+            </TouchableOpacity>
+          )}
+          {maMobil && (
+            <TouchableOpacity
+              style={[styly.akceTlacitko, { borderColor: barvy.ohraniceni, backgroundColor: barvy.pozadiKarty, borderWidth: 2 }]}
+              onPress={() => naZavolaniTelefon(mobilCislo)}
+              activeOpacity={0.7}
+            >
               <MaterialCommunityIcons name="cellphone" size={18} color={barvy.textAkcent} />
               <Text style={[styly.akceTlacitkoText, { color: barvy.textAkcent, fontSize: 14 * m }]}>
-                Zavolat na telefon {formatujCislo(telefonCislo)}
+                Zavolat na mobil {formatujCislo(mobilCislo)}
               </Text>
             </TouchableOpacity>
           )}

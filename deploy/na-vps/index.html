@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aplikace od Pupenu</title>
+<meta name="description" content="Přehled aktuálních aplikací provozovaných Pupenem včetně odkazů ke stažení." />
+<style>
+  :root {
+    --cerna: #000000;
+    --bila: #ffffff;
+    --zelena: #16a34a;
+    --zelena-tmava: #15803d;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bila);
+    color: var(--cerna);
+  }
+  a { color: inherit; }
+  .stranka {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+  }
+  .obsah {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+  }
+  .horni-lista {
+    border-bottom: 2px solid var(--cerna);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+  }
+  .horni-lista__obsah {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+    min-height: 74px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .znacka {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .znacka__ikona {
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--cerna);
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+  }
+  .znacka__nad {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--zelena-tmava);
+  }
+  .znacka__nazev {
+    display: block;
+    font-size: 19px;
+    line-height: 1.05;
+  }
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .nav a {
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .nav a:hover,
+  .nav a:focus-visible {
+    color: var(--zelena);
+  }
+  .hero {
+    padding: 56px 0 34px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid var(--cerna);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    background: var(--bila);
+  }
+  h1 {
+    margin: 18px 0 14px;
+    font-size: clamp(40px, 8vw, 72px);
+    line-height: 0.96;
+    letter-spacing: -0.05em;
+    font-weight: 900;
+    max-width: 900px;
+  }
+  h1 span { color: var(--zelena); }
+  .perex {
+    max-width: 760px;
+    margin: 0;
+    font-size: clamp(16px, 2.4vw, 24px);
+    line-height: 1.45;
+    font-weight: 600;
+  }
+  .sekce {
+    padding: 16px 0 72px;
+  }
+  .sekce__hlavicka {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .sekce__hlavicka h2 {
+    margin: 0;
+    font-size: clamp(24px, 4vw, 38px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-weight: 900;
+  }
+  .sekce__hlavicka p {
+    margin: 0;
+    max-width: 560px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .karta {
+    border: 2px solid var(--cerna);
+    border-radius: 30px;
+    background: var(--bila);
+    padding: 24px;
+  }
+  .karta__hlavicka {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .karta__ikona {
+    width: 62px;
+    height: 62px;
+    border: 2px solid var(--cerna);
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+  }
+  .stitky {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .stitek {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border: 2px solid var(--cerna);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    background: var(--bila);
+  }
+  .stitek--zeleny {
+    background: #dcfce7;
+    border-color: var(--zelena);
+    color: var(--zelena-tmava);
+  }
+  .karta h3 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+  .karta p {
+    margin: 0 0 18px;
+    font-size: 15px;
+    line-height: 1.65;
+    font-weight: 500;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .meta__polozka {
+    border: 2px solid var(--cerna);
+    border-radius: 16px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .akce {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .tlacitko,
+  .tlacitko--sekundarni {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 18px;
+    border-radius: 18px;
+    border: 2px solid var(--cerna);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+  }
+  .tlacitko {
+    background: var(--zelena);
+    border-color: var(--zelena);
+    color: var(--bila);
+  }
+  .tlacitko:hover,
+  .tlacitko:focus-visible {
+    background: var(--zelena-tmava);
+    border-color: var(--zelena-tmava);
+  }
+  .tlacitko--sekundarni:hover,
+  .tlacitko--sekundarni:focus-visible {
+    color: var(--zelena);
+    border-color: var(--zelena);
+  }
+  .poznamka {
+    margin-top: 28px;
+    padding: 18px 20px;
+    border: 2px solid var(--cerna);
+    border-radius: 20px;
+    font-size: 14px;
+    line-height: 1.65;
+    font-weight: 600;
+    background: var(--bila);
+  }
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .horni-lista__obsah {
+      padding: 14px 0;
+      align-items: start;
+      flex-direction: column;
+    }
+    .hero { padding-top: 34px; }
+    .karta { padding: 20px; }
+    .karta__hlavicka { flex-direction: column; }
+    .nav { gap: 12px; }
+  }
+</style>
+</head>
+<body>
+  <div class="stranka">
+    <header class="horni-lista">
+      <div class="horni-lista__obsah">
+        <a class="znacka" href="https://www.pupen.org/">
+          <span class="znacka__ikona">P</span>
+          <span>
+            <span class="znacka__nad">Pupen</span>
+            <span class="znacka__nazev">Aplikace</span>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Navigace">
+          <a href="#aplikace">Seznam aplikací</a>
+          <a href="/apps/linka/">ČZU Linka</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="obsah">
+      <section class="hero">
+        <span class="badge">Aplikace provozované Pupenem</span>
+        <h1>Jedno místo pro <span>aktuální appky</span> a jejich stažení.</h1>
+        <p class="perex">
+          Tady najdete přehled aktivních aplikací, které Pupen provozuje. U každé aplikace je rovnou
+          odkaz na dostupné stažení podle platformy.
+        </p>
+      </section>
+
+      <section id="aplikace" class="sekce">
+        <div class="sekce__hlavicka">
+          <div>
+            <h2>Aktuální aplikace</h2>
+          </div>
+          <p>
+            Zatím je dostupná jedna aplikace. Stránka je připravená i pro další projekty a různé typy distribuce.
+          </p>
+        </div>
+
+        <div class="grid">
+          <article class="karta">
+            <div class="karta__hlavicka">
+              <div style="display:flex; gap:16px; align-items:center;">
+                <div class="karta__ikona">☎</div>
+                <div>
+                  <h3>ČZU Linka</h3>
+                  <p style="margin:0;">Rychlé vyhledávání a vytáčení interních linek v jednoduchém mobilním rozhraní.</p>
+                </div>
+              </div>
+              <div class="stitky">
+                <span class="stitek stitek--zeleny">Aktivní</span>
+                <span class="stitek">Android APK</span>
+              </div>
+            </div>
+
+            <div class="meta">
+              <div class="meta__polozka">Distribuce: přímé stažení</div>
+              <div class="meta__polozka">Detail: /apps/linka/</div>
+            </div>
+
+            <div class="akce">
+              <a class="tlacitko" href="/apps/linka/linka.apk">Stáhnout APK</a>
+              <a class="tlacitko--sekundarni" href="/apps/linka/">Detail aplikace</a>
+            </div>
+          </article>
+        </div>
+
+        <div class="poznamka">
+          Odkazy se u jednotlivých aplikací zobrazují podle toho, co je aktuálně dostupné:
+          buď přímé stažení APK, nebo odkaz do App Storu pro iOS.
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -30,21 +30,49 @@ const nactiZavislosti = () => {
 };
 
 /**
- * Vrátí kompletní telefonní číslo z kontaktu:
- * - pokud má kontakt vlastní telefon, použije se
- * - jinak se číslo složí z linky (prefix + 4 čísla)
+ * Vrátí seznam všech telefonních čísel kontaktu včetně typu.
+ * Preferujeme pevnou linku, ale pokud je dostupný i mobil, přidáme ho zvlášť.
  */
-const ziskejTelefon = (kontakt) => {
+const ziskejTelefony = (kontakt) => {
   const { TELEFONNI_PREFIX } = require("../data/defaultContacts");
-  if (!kontakt) return "";
-  // Pokud uživatel má uložené celé číslo – použijeme ho
-  if (kontakt.telefon && String(kontakt.telefon).length > 6) return String(kontakt.telefon);
-  if (kontakt.cislo && kontakt.cislo.length > 6) return kontakt.cislo;
-  // Jinak z linky
-  if (kontakt.linka && /^\d{4}$/.test(kontakt.linka)) {
-    return `${TELEFONNI_PREFIX}${kontakt.linka}`;
+  if (!kontakt) return [];
+
+  const telefony = [];
+  const pridejTelefon = (cislo, label, numberType, isPrimary = false) => {
+    const hodnota = String(cislo || "").trim();
+    if (!hodnota) return;
+    if (telefony.some((telefon) => telefon.number === hodnota)) return;
+    telefony.push({ number: hodnota, label, numberType, isPrimary });
+  };
+
+  const telefon = String(kontakt.telefon || "").trim();
+  const mobil = String(kontakt.mobil || "").trim();
+
+  if (telefon && telefon !== mobil) {
+    pridejTelefon(telefon, "Práce", ExContacts?.PhoneNumberTypes?.WORK ?? "work", true);
+  } else if (!telefon && kontakt.linka && /^\d{4}$/.test(kontakt.linka)) {
+    pridejTelefon(
+      `${TELEFONNI_PREFIX}${kontakt.linka}`,
+      "Práce",
+      ExContacts?.PhoneNumberTypes?.WORK ?? "work",
+      true
+    );
   }
-  return kontakt.linka || "";
+
+  if (mobil) {
+    pridejTelefon(mobil, "Mobil", ExContacts?.PhoneNumberTypes?.MOBILE ?? "mobile", telefony.length === 0);
+  }
+
+  if (telefony.length === 0 && kontakt.linka && /^\d{4}$/.test(kontakt.linka)) {
+    pridejTelefon(
+      `${TELEFONNI_PREFIX}${kontakt.linka}`,
+      "Práce",
+      ExContacts?.PhoneNumberTypes?.WORK ?? "work",
+      true
+    );
+  }
+
+  return telefony;
 };
 
 /**
@@ -53,7 +81,7 @@ const ziskejTelefon = (kontakt) => {
  */
 export const sestavTextKontaktu = (kontakt) => {
   if (!kontakt) return "";
-  const telefon = ziskejTelefon(kontakt);
+  const telefony = ziskejTelefony(kontakt);
   const radky = [];
   if (kontakt.jmeno) radky.push(`👤 ${kontakt.jmeno}`);
   if (kontakt.oddeleni) radky.push(`🏛️ ${kontakt.oddeleni}`);
@@ -65,7 +93,9 @@ export const sestavTextKontaktu = (kontakt) => {
     radky.push(`📍 ${kontakt.budova}${mistnost}`);
   }
   if (kontakt.linka) radky.push(`☎️ Linka: ${kontakt.linka}`);
-  if (telefon) radky.push(`📞 ${telefon}`);
+  telefony.forEach((telefon) => {
+    radky.push(`📞 ${telefon.label}: ${telefon.number}`);
+  });
   if (kontakt.email) radky.push(`✉️ ${kontakt.email}`);
   radky.push("");
   radky.push("– Sdíleno z aplikace Linka (Pupen, z.s.)");
@@ -79,7 +109,7 @@ export const sestavTextKontaktu = (kontakt) => {
  */
 export const sestavVCard = (kontakt) => {
   if (!kontakt) return "";
-  const telefon = ziskejTelefon(kontakt);
+  const telefony = ziskejTelefony(kontakt);
 
   // Rozložíme formátované jméno na jednotlivé části (pokud lze)
   const fn = kontakt.jmeno || "Neznámý";
@@ -107,7 +137,12 @@ export const sestavVCard = (kontakt) => {
     radky.push(`ORG:${org}`);
   }
   if (kontakt.linka) radky.push(`TITLE:Linka: ${kontakt.linka}`);
-  if (telefon) radky.push(`TEL;TYPE=WORK,VOICE:${telefon}`);
+  telefony.forEach((telefon) => {
+    const typ = telefon.numberType === (ExContacts?.PhoneNumberTypes?.MOBILE ?? "mobile")
+      ? "CELL"
+      : "WORK,VOICE";
+    radky.push(`TEL;TYPE=${typ}:${telefon.number}`);
+  });
   if (kontakt.email) radky.push(`EMAIL;TYPE=WORK,INTERNET:${kontakt.email}`);
   if (kontakt.budova || kontakt.mistnost) {
     const adresa = [
@@ -268,7 +303,7 @@ export const ulozitDoTelefonu = async (kontakt) => {
     }
 
     // 2. Příprava kontaktních dat
-    const telefon = ziskejTelefon(kontakt);
+    const telefony = ziskejTelefony(kontakt);
 
     // Složíme organizaci + oddělení
     let company = kontakt.fakulta || "Studentský spolek Pupen, z.s.";
@@ -282,14 +317,7 @@ export const ulozitDoTelefonu = async (kontakt) => {
       [ExContacts.Fields.Name]: kontakt.jmeno || "Neznámý",
       [ExContacts.Fields.Company]: company,
       [ExContacts.Fields.JobTitle]: kontakt.linka ? `Linka: ${kontakt.linka}` : "",
-      [ExContacts.Fields.PhoneNumbers]: telefon ? [
-        {
-          number: telefon,
-          isPrimary: true,
-          numberType: ExContacts.PhoneNumberTypes.WORK,
-          label: "Práce"
-        }
-      ] : [],
+      [ExContacts.Fields.PhoneNumbers]: telefony,
       [ExContacts.Fields.Emails]: kontakt.email ? [
         {
           email: kontakt.email,
